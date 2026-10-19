@@ -1,0 +1,170 @@
+[
+    {
+        "Feature":  "CSRF Token Generation",
+        "Expected":  "XSRF-TOKEN cookie returned",
+        "Actual":  "Token received (4ab91599...)",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "User Registration (User Alpha)",
+        "Expected":  "HTTP 201, User created, password omitted",
+        "Actual":  "User ID 5, username user_alpha_10335, password omitted: True",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "User Registration (User Beta)",
+        "Expected":  "HTTP 201, User created",
+        "Actual":  "User ID 6, username user_beta_10335",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "User Alpha Login",
+        "Expected":  "HTTP 200, JSESSIONID issued",
+        "Actual":  "Logged in as user_alpha_10335, JSESSIONID present: True",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "User Profile (/api/auth/me)",
+        "Expected":  "HTTP 200 with User Alpha profile",
+        "Actual":  "Username: user_alpha_10335, Role: USER",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Fetch Quiz Questions",
+        "Expected":  "15 active questions, option correctness hidden",
+        "Actual":  "Count: 15, answers hidden: True",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Quiz Submission",
+        "Expected":  "HTTP 200, score and risk level calculated",
+        "Actual":  "Result ID: 3, Score: 10/150, Risk: CRITICAL",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "User Dashboard",
+        "Expected":  "Total assessments \u003e= 1 and latest score visible",
+        "Actual":  "Assessments: 1, Latest score: 10 (6.666666666666667%), Risk: CRITICAL",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Quiz History",
+        "Expected":  "At least 1 historical result",
+        "Actual":  "Records found: 1",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Fetch Learning Modules",
+        "Expected":  "6 learning modules returned",
+        "Actual":  "Count: 6, Module 1 completed: False",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Complete Learning Module",
+        "Expected":  "HTTP 200, Module marked complete",
+        "Actual":  "Response: Module marked as complete",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Learning Progress Summary",
+        "Expected":  "Completed modules \u003e= 1",
+        "Actual":  "Completed: 1, Total: 6",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Submit Incident Report",
+        "Expected":  "HTTP 201, Report status OPEN",
+        "Actual":  "Report ID: 3, Status: OPEN, ReportedBy: user_alpha_10335",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "User Incident Reports List",
+        "Expected":  "Contains User Alpha report",
+        "Actual":  "Count: 1, First ID: 3",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: User Alpha Access /api/admin/summary",
+        "Expected":  "HTTP 403 Forbidden",
+        "Actual":  "HTTP 403 Forbidden received",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: User Alpha Access /api/admin/users",
+        "Expected":  "HTTP 403 Forbidden",
+        "Actual":  "HTTP 403 Forbidden received",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: Cross-User Incidents List Isolation",
+        "Expected":  "User B sees 0 incidents (cannot see User A\u0027s)",
+        "Actual":  "User B incidents count: 0",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: Cross-User Direct Incident Access",
+        "Expected":  "HTTP 404 or 403",
+        "Actual":  "Blocked with status code: 404",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: Cross-User Direct Quiz Result Access",
+        "Expected":  "HTTP 403 Forbidden",
+        "Actual":  "Blocked with status code: 403",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "User Logout \u0026 Session Invalidation",
+        "Expected":  "HTTP 200 on logout; 401 on subsequent auth check",
+        "Actual":  "Logout status: 200, subsequent request blocked: True",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Admin Authentication",
+        "Expected":  "HTTP 200, role ADMIN",
+        "Actual":  "Logged in: admin, Role: ADMIN",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Admin Summary API",
+        "Expected":  "System metrics returned",
+        "Actual":  "Users: 6, Assessments: 3, Open Incidents: 2",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Admin Users List",
+        "Expected":  "List of users with roles, no password hashes",
+        "Actual":  "User count: 6, password hash exposed: False",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Admin Incident Status Workflow",
+        "Expected":  "Status transitioned to UNDER_REVIEW then RESOLVED",
+        "Actual":  "Final Status: RESOLVED, Notes: Malicious domain reported to registrar and taken down.",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Admin Question Toggle",
+        "Expected":  "Toggle question active status",
+        "Actual":  "Toggled to: False, Toggled back: True",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: Stack Trace Prevention",
+        "Expected":  "No Java stack trace exposed",
+        "Actual":  "Error response contains stack trace: False",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: Database Password Hashing",
+        "Expected":  "All passwords stored as BCrypt hashes",
+        "Actual":  "Non-BCrypt password count in DB: 0",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Database Persistence: MySQL Rows",
+        "Expected":  "Assessment, Progress, and Incident records verified in MySQL",
+        "Actual":  "Records verified in DB: 1\t1\t1",
+        "Status":  "PASS"
+    }
+]

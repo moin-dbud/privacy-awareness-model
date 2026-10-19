@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Simulator — Privacy Guard</title>
+  <meta name="description" content="Interactive phishing scenario trainer across Email, SMS, and Direct Message attacks">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .channel-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 8px 18px;
+      background: var(--navy-800);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover {
+      border-color: var(--teal-400);
+      color: var(--white);
+    }
+    .filter-btn.active {
+      background: rgba(45, 212, 191, 0.15);
+      border-color: var(--teal-400);
+      color: var(--teal-400);
+      font-weight: 600;
+    }
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .scenario-card {
+      background: var(--navy-800);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .scenario-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(45, 212, 191, 0.35);
+    }
+    .scenario-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .channel-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-email { background: rgba(56, 189, 248, 0.15); color: var(--blue-400); }
+    .badge-sms   { background: rgba(245, 158, 11, 0.15); color: var(--amber-400); }
+    .badge-dm    { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+    /* Modal Simulation Viewer */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 12, 27, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .sim-modal {
+      background: var(--navy-900);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 820px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+    .sim-modal-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--navy-950);
+    }
+    .sim-modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    /* Realistic Message Frames */
+    .email-frame {
+      background: #ffffff;
+      color: #1a202c;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-bottom: 24px;
+    }
+    .email-headers {
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+    }
+    .email-header-row {
+      display: flex;
+      margin-bottom: 4px;
+    }
+    .email-header-label {
+      width: 70px;
+      color: #718096;
+      font-weight: 600;
+    }
+    .email-header-val {
+      color: #2d3748;
+      word-break: break-all;
+    }
+    .sms-frame {
+      max-width: 480px;
+      margin: 0 auto 24px;
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 24px;
+      padding: 20px 16px;
+    }
+    .sms-header-bar {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+    .sms-bubble {
+      background: #0284c7;
+      color: #ffffff;
+      padding: 14px 18px;
+      border-radius: 18px 18px 4px 18px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .dm-frame {
+      max-width: 520px;
+      margin: 0 auto 24px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .dm-header-bar {
+      padding: 12px 16px;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .dm-bubble {
+      padding: 18px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+    .redflag-option-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--navy-800);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .redflag-option-item:hover {
+      border-color: var(--teal-400);
+      background: rgba(45, 212, 191, 0.04);
+    }
+    .redflag-option-item input[type="checkbox"] {
+      margin-top: 3px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--teal-400);
+      cursor: pointer;
+    }
+    .redflag-option-item.selected {
+      border-color: var(--teal-400);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    /* Feedback Badges */
+    .indicator-feedback-card {
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+    }
+    .fb-spotted {
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: var(--green-400);
+    }
+    .fb-missed {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--red-400);
+    }
+    .fb-falsealarm {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--amber-400);
+    }
+  </style>
+</head>
+<body>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99"></div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🛡️</div>
+      <h2>Privacy Guard</h2>
+      <p>Security Management System</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">📝</span> Privacy Quiz</a>
+      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">📚</span> Learning Center</a>
+      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">🚨</span> Incident Reports</a>
+      <a href="/password-checker.html" class="nav-link" data-page="password-checker"><span class="nav-icon">🔐</span> Password Checker</a>
+      <a href="/simulator.html" class="nav-link" data-page="simulator"><span class="nav-icon">🎣</span> Phishing Simulator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-username">Loading…</div>
+          <div class="user-role" id="sidebar-role"></div>
+        </div>
+      </div>
+      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <header class="top-bar">
+      <div class="flex items-center gap-12">
+        <button class="hamburger" id="hamburger">☰</button>
+        <span class="top-bar-title">Phishing Simulation Training</span>
+      </div>
+      <div class="top-bar-actions">
+        <a href="/dashboard.html" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="mb-24">
+        <h1>Interactive Phishing Attack Simulator</h1>
+        <p class="text-muted mt-6">
+          Inspect 10 real-world attack simulations across Email, SMS, and Direct Messages.
+          Spot the red flag indicators, submit your analysis, and learn how to defuse social engineering tactics.
+        </p>
+      </div>
+
+      <!-- Channel Filters -->
+      <div class="channel-filters">
+        <button class="filter-btn active" data-filter="ALL">All Simulations (10)</button>
+        <button class="filter-btn" data-filter="EMAIL">📧 Emails (4)</button>
+        <button class="filter-btn" data-filter="SMS">💬 SMS / Smishing (3)</button>
+        <button class="filter-btn" data-filter="DIRECT_MESSAGE">📱 Social Media DMs (3)</button>
+      </div>
+
+      <!-- Scenario Cards Grid -->
+      <div id="loading" class="text-muted text-sm">Loading scenarios…</div>
+      <div class="scenario-grid" id="scenario-grid"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Simulation Challenge -->
+<div id="sim-modal-overlay" class="modal-backdrop hidden">
+  <div class="sim-modal">
+    <div class="sim-modal-header">
+      <div>
+        <h3 id="modal-title" style="font-size:1.15rem; margin-bottom:2px;">Simulation Challenge</h3>
+        <span id="modal-channel-badge" class="channel-badge badge-email">EMAIL</span>
+      </div>
+      <button id="modal-close-btn" class="btn btn-secondary btn-sm" style="padding:4px 10px;">✕ Close</button>
+    </div>
+
+    <div class="sim-modal-body" id="modal-challenge-view">
+      <!-- Message Frame -->
+      <div id="message-frame-container"></div>
+
+      <!-- Red Flag Checklist Prompt -->
+      <div class="mt-20">
+        <h4 style="font-size:1rem; margin-bottom:6px;">🔎 Spot the Red Flags</h4>
+        <p class="text-xs text-dim mb-12">Select all deceptive markers, lures, or technical indicators present in this communication:</p>
+        <form id="redflag-form"></form>
+      </div>
+
+      <div class="flex justify-end gap-12 mt-20 pt-16" style="border-top:1px solid var(--border);">
+        <button id="cancel-sim-btn" class="btn btn-secondary">Cancel</button>
+        <button id="submit-sim-btn" class="btn btn-primary">Submit Inspection & Analyze</button>
+      </div>
+    </div>
+
+    <!-- Results View (Hidden Initially) -->
+    <div class="sim-modal-body hidden" id="modal-result-view">
+      <div style="text-align:center; padding:10px 0 20px;">
+        <div id="result-score-ring" class="score-ring" style="margin:0 auto 12px; border-color:var(--teal-400);">
+          <div class="score-pct" id="result-score-val">100%</div>
+          <div class="score-text">Score</div>
+        </div>
+        <h3 id="result-headline">Analysis Complete</h3>
+        <p class="text-sm text-muted mt-4" id="result-feedback"></p>
+      </div>
+
+      <!-- General Explanation -->
+      <div class="p-16 mb-20" style="background:var(--navy-800); border-radius:10px; border-left:4px solid var(--teal-400);">
+        <h4 style="font-size:0.95rem; color:var(--teal-400); margin-bottom:6px;">📖 Threat Defense Breakdown</h4>
+        <p class="text-sm text-muted" id="result-explanation" style="line-height:1.5;"></p>
+      </div>
+
+      <!-- Indicators List -->
+      <h4 style="font-size:1rem; margin-bottom:12px;">Detailed Indicator Results</h4>
+      <div id="result-indicators-list"></div>
+
+      <div class="flex justify-end gap-12 mt-20 pt-16" style="border-top:1px solid var(--border);">
+        <button id="close-result-btn" class="btn btn-primary">Done / Back to Simulations</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+(async () => {
+  await requireAuth();
+  initSidebar('simulator');
+  await populateSidebarUser();
+
+  let allScenarios = [];
+  let currentFilter = 'ALL';
+  let activeScenario = null;
+
+  const grid            = document.getElementById('scenario-grid');
+  const loading         = document.getElementById('loading');
+  const modalOverlay    = document.getElementById('sim-modal-overlay');
+  const modalCloseBtn   = document.getElementById('modal-close-btn');
+  const cancelSimBtn    = document.getElementById('cancel-sim-btn');
+  const submitSimBtn    = document.getElementById('submit-sim-btn');
+  const closeResultBtn  = document.getElementById('close-result-btn');
+
+  const challengeView   = document.getElementById('modal-challenge-view');
+  const resultView      = document.getElementById('modal-result-view');
+  const frameContainer  = document.getElementById('message-frame-container');
+  const redflagForm     = document.getElementById('redflag-form');
+
+  // Filter Buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderScenarios();
+    });
+  });
+
+  async function loadScenarios() {
+    try {
+      allScenarios = await API.get('/api/simulator/scenarios');
+      loading.classList.add('hidden');
+      renderScenarios();
+    } catch (err) {
+      loading.textContent = 'Failed to load scenarios. Please refresh.';
+    }
+  }
+
+  function renderScenarios() {
+    const filtered = currentFilter === 'ALL'
+      ? allScenarios
+      : allScenarios.filter(s => s.channel === currentFilter);
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="empty-state text-dim">No scenarios found for this filter.</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(s => {
+      const channelLabel = s.channel === 'EMAIL' ? '📧 Email' : (s.channel === 'SMS' ? '💬 SMS' : '📱 Direct Message');
+      const badgeClass   = s.channel === 'EMAIL' ? 'badge-email' : (s.channel === 'SMS' ? 'badge-sms' : 'badge-dm');
+
+      return `
+        <div class="scenario-card">
+          <div>
+            <div class="scenario-meta">
+              <span class="channel-badge ${badgeClass}">${channelLabel}</span>
+              <span class="text-xs text-dim">${s.difficulty}</span>
+            </div>
+            <h3 style="font-size:1.05rem; margin-bottom:8px;">${s.title}</h3>
+            <p class="text-xs text-dim mb-12">Sender: <span style="font-family:'JetBrains Mono',monospace; color:var(--slate-300);">${s.sender}</span></p>
+          </div>
+          <div class="mt-16 pt-12" style="border-top:1px solid var(--border);">
+            <button class="btn btn-secondary btn-sm btn-full" onclick="launchSimulation(${s.id})">Launch Simulation 🚀</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.launchSimulation = (id) => {
+    activeScenario = allScenarios.find(s => s.id === id);
+    if (!activeScenario) return;
+
+    document.getElementById('modal-title').textContent = activeScenario.title;
+    const badge = document.getElementById('modal-channel-badge');
+    badge.textContent = activeScenario.channel;
+    badge.className = `channel-badge ${activeScenario.channel === 'EMAIL' ? 'badge-email' : (activeScenario.channel === 'SMS' ? 'badge-sms' : 'badge-dm')}`;
+
+    // Render realistic message preview
+    if (activeScenario.channel === 'EMAIL') {
+      frameContainer.innerHTML = `
+        <div class="email-frame">
+          <div class="email-headers">
+            <div class="email-header-row"><span class="email-header-label">From:</span><span class="email-header-val">&lt;${activeScenario.sender}&gt;</span></div>
+            <div class="email-header-row"><span class="email-header-label">Subject:</span><span class="email-header-val"><strong>${activeScenario.subject || 'Security Notification'}</strong></span></div>
+            <div class="email-header-row"><span class="email-header-label">To:</span><span class="email-header-val">you@domain.com</span></div>
+          </div>
+          <div class="email-body">${activeScenario.content}</div>
+        </div>
+      `;
+    } else if (activeScenario.channel === 'SMS') {
+      frameContainer.innerHTML = `
+        <div class="sms-frame">
+          <div class="sms-header-bar">SMS with ${activeScenario.sender}</div>
+          <div class="sms-bubble">${activeScenario.content}</div>
+        </div>
+      `;
+    } else {
+      frameContainer.innerHTML = `
+        <div class="dm-frame">
+          <div class="dm-header-bar">
+            <span>👤</span>
+            <span>${activeScenario.sender}</span>
+          </div>
+          <div class="dm-bubble">${activeScenario.content}</div>
+        </div>
+      `;
+    }
+
+    // Render candidate red flag options
+    redflagForm.innerHTML = activeScenario.redFlagOptions.map(opt => `
+      <label class="redflag-option-item" id="flag-label-${opt.id}">
+        <input type="checkbox" name="redflag" value="${opt.id}" onchange="toggleFlagSelection(${opt.id}, this)">
+        <span style="font-size:0.9rem; color:var(--white);">${opt.flagText}</span>
+      </label>
+    `).join('');
+
+    challengeView.classList.remove('hidden');
+    resultView.classList.add('hidden');
+    modalOverlay.classList.remove('hidden');
+  };
+
+  window.toggleFlagSelection = (id, cb) => {
+    const item = document.getElementById(`flag-label-${id}`);
+    if (cb.checked) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  };
+
+  function closeModal() {
+    modalOverlay.classList.add('hidden');
+    activeScenario = null;
+  }
+
+  modalCloseBtn.addEventListener('click', closeModal);
+  cancelSimBtn.addEventListener('click', closeModal);
+  closeResultBtn.addEventListener('click', closeModal);
+
+  submitSimBtn.addEventListener('click', async () => {
+    if (!activeScenario) return;
+
+    const checkedInputs = redflagForm.querySelectorAll('input[type="checkbox"]:checked');
+    const selectedFlagIds = Array.from(checkedInputs).map(i => parseInt(i.value, 10));
+
+    submitSimBtn.textContent = 'Evaluating…';
+    submitSimBtn.disabled = true;
+
+    try {
+      const result = await API.post('/api/simulator/submit', {
+        scenarioId: activeScenario.id,
+        selectedFlagIds: selectedFlagIds
+      });
+
+      renderResult(result);
+    } catch (e) {
+      alert('Error submitting simulation: ' + e.message);
+    } finally {
+      submitSimBtn.textContent = 'Submit Inspection & Analyze';
+      submitSimBtn.disabled = false;
+    }
+  });
+
+  function renderResult(res) {
+    challengeView.classList.add('hidden');
+    resultView.classList.remove('hidden');
+
+    document.getElementById('result-score-val').textContent = `${res.score}%`;
+    const ring = document.getElementById('result-score-ring');
+    ring.style.borderColor = res.passed ? 'var(--teal-400)' : 'var(--red-400)';
+
+    document.getElementById('result-headline').textContent = res.passed ? '🎉 Threat Successfully Neutralized!' : '⚠️ Phishing Vulnerability Identified';
+    document.getElementById('result-feedback').textContent = res.feedback;
+    document.getElementById('result-explanation').textContent = res.generalExplanation;
+
+    const indContainer = document.getElementById('result-indicators-list');
+    indContainer.innerHTML = res.flagDetails.map(d => {
+      let badgeHtml = '';
+      let cardClass = '';
+
+      if (d.isActualRedFlag && d.selectedByUser) {
+        cardClass = 'fb-spotted';
+        badgeHtml = '<strong>✓ Correctly Spotted</strong> — Real Red Flag';
+      } else if (d.isActualRedFlag && !d.selectedByUser) {
+        cardClass = 'fb-missed';
+        badgeHtml = '<strong>✗ Missed Indicator</strong> — You missed this attack signal!';
+      } else if (!d.isActualRedFlag && d.selectedByUser) {
+        cardClass = 'fb-falsealarm';
+        badgeHtml = '<strong>⚠ False Alarm</strong> — This was a benign decoy';
+      } else {
+        return ''; // Benign marker that user correctly didn't select
+      }
+
+      return `
+        <div class="indicator-feedback-card ${cardClass}">
+          <div>${badgeHtml}</div>
+          <div style="font-weight:600; margin:4px 0 2px;">${d.flagText}</div>
+          <div class="text-xs text-muted">${d.description}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  loadScenarios();
+})();
+</script>
+</body>
+</html>

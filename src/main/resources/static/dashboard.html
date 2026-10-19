@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Privacy Guard</title>
+  <meta name="description" content="Your privacy awareness dashboard">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 640px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .chart-card {
+      background: var(--navy-800);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-container {
+      position: relative;
+      height: 260px;
+      width: 100%;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99"></div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🛡️</div>
+      <h2>Privacy Guard</h2>
+      <p>Security Management System</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">📝</span> Privacy Quiz</a>
+      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">📚</span> Learning Center</a>
+      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">🚨</span> Incident Reports</a>
+      <a href="/password-checker.html" class="nav-link" data-page="password-checker"><span class="nav-icon">🔐</span> Password Checker</a>
+      <a href="/simulator.html" class="nav-link" data-page="simulator"><span class="nav-icon">🎣</span> Phishing Simulator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-username">Loading…</div>
+          <div class="user-role" id="sidebar-role"></div>
+        </div>
+      </div>
+      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <header class="top-bar">
+      <div class="flex items-center gap-12">
+        <button class="hamburger" id="hamburger">☰</button>
+        <span class="top-bar-title">Dashboard</span>
+      </div>
+      <div class="top-bar-actions">
+        <a href="/quiz.html" class="btn btn-primary btn-sm">Take Quiz</a>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- Loading -->
+      <div id="loading" class="text-muted text-sm">Loading dashboard…</div>
+
+      <!-- Dashboard content -->
+      <div id="dashboard-content" class="hidden">
+        <div class="mb-24">
+          <h1 id="welcome-heading">Welcome back!</h1>
+          <p id="welcome-sub" class="text-muted mt-4"></p>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-label">Assessments Taken</div>
+            <div class="stat-value" id="stat-assessments">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-label">Latest Score</div>
+            <div class="stat-value" id="stat-score">—</div>
+            <div class="stat-sub" id="stat-risk"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-label">Modules Completed</div>
+            <div class="stat-value" id="stat-modules">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-label">Incidents Reported</div>
+            <div class="stat-value" id="stat-incidents">—</div>
+          </div>
+        </div>
+
+        <!-- Interactive Visualizations: Score Trend & Category Risk Breakdown -->
+        <div class="charts-grid">
+          <!-- Line Chart: Score Trend -->
+          <div class="chart-card">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 style="font-size:1.05rem; font-weight:600;">Score Trend Over Time</h3>
+                <p class="text-xs text-dim mt-2">Historical quiz progress & evaluation percentage</p>
+              </div>
+              <span class="badge" style="background:rgba(45,212,191,0.1); color:var(--teal-400);">Line Chart</span>
+            </div>
+            <div class="chart-container" id="trend-chart-container">
+              <canvas id="scoreTrendChart"></canvas>
+            </div>
+            <div id="trend-empty" class="empty-state hidden" style="padding:40px 10px;">
+              <p class="text-sm text-dim">No historical quiz attempts yet. Take a quiz to populate trends!</p>
+            </div>
+          </div>
+
+          <!-- Bar Chart: Risk by Category -->
+          <div class="chart-card">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 style="font-size:1.05rem; font-weight:600;">Privacy Risk by Category</h3>
+                <p class="text-xs text-dim mt-2">Accuracy % across 6 key threat vectors</p>
+              </div>
+              <span class="badge" style="background:rgba(56,189,248,0.1); color:var(--blue-400);">Bar Chart</span>
+            </div>
+            <div class="chart-container" id="category-chart-container">
+              <canvas id="categoryRiskChart"></canvas>
+            </div>
+            <div id="category-empty" class="empty-state hidden" style="padding:40px 10px;">
+              <p class="text-sm text-dim">No category evaluations yet. Complete a quiz to view your category matrix.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Risk level card -->
+          <div class="card">
+            <div class="card-header flex justify-between items-center">
+              <div>
+                <div class="card-title">Privacy Risk Level</div>
+                <div class="card-subtitle">Based on your latest assessment</div>
+              </div>
+            </div>
+            <div id="risk-display">
+              <div class="empty-state">
+                <div class="empty-icon">📝</div>
+                <h3>No assessments yet</h3>
+                <p>Take the privacy quiz to see your risk level.</p>
+                <a href="/quiz.html" class="btn btn-primary btn-sm mt-12">Start Quiz</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Learning progress -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Learning Progress</div>
+              <div class="card-subtitle">Your module completion status</div>
+            </div>
+            <div id="learning-progress-display">
+              <div class="progress-label">
+                <span>Modules completed</span>
+                <strong id="progress-fraction">0 / 0</strong>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+              </div>
+              <p class="text-xs text-dim mt-8" id="progress-pct-label">0% complete</p>
+              <a href="/learning.html" class="btn btn-secondary btn-sm mt-16">Go to Learning Center</a>
+            </div>
+          </div>
+
+          <!-- Assessment history -->
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header flex justify-between items-center">
+              <div>
+                <div class="card-title">Assessment History</div>
+                <div class="card-subtitle">Your recent quiz results</div>
+              </div>
+              <a href="/quiz.html" class="btn btn-primary btn-sm">New Quiz</a>
+            </div>
+            <div id="history-content">
+              <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <h3>No assessment history</h3>
+                <p>Complete your first quiz to see your results here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) return;
+
+  if (user.role === 'ADMIN') {
+    window.location.href = '/admin.html';
+    return;
+  }
+
+  initSidebar('dashboard');
+  populateSidebarUser();
+  document.getElementById('logout-btn').addEventListener('click', logout);
+
+  const heading = document.getElementById('welcome-heading');
+  heading.textContent = `Welcome back, ${user.fullName || user.username}!`;
+  document.getElementById('welcome-sub').textContent = "Here's your privacy awareness overview and threat matrix.";
+
+  try {
+    const data = await API.get('/api/dashboard');
+
+    document.getElementById('stat-assessments').textContent = data.totalAssessments ?? 0;
+    document.getElementById('stat-modules').textContent     = `${data.completedModules ?? 0} / ${data.totalModules ?? 0}`;
+    document.getElementById('stat-incidents').textContent   = data.totalIncidentReports ?? 0;
+
+    // Score
+    if (data.latestPercentage !== undefined) {
+      document.getElementById('stat-score').textContent = `${Math.round(data.latestPercentage)}%`;
+      const riskEl = document.getElementById('stat-risk');
+      riskEl.innerHTML = riskBadge(data.latestRiskLevel);
+    } else {
+      document.getElementById('stat-score').textContent = '—';
+    }
+
+    // Risk display
+    if (data.latestRiskLevel) {
+      const colors = { LOW: '#4ade80', MEDIUM: '#fbbf24', HIGH: '#f87171', CRITICAL: '#ff4444' };
+      document.getElementById('risk-display').innerHTML = `
+        <div style="text-align:center;padding:20px 0">
+          <div class="score-ring" style="border-color:${colors[data.latestRiskLevel]}">
+            <div class="score-pct">${Math.round(data.latestPercentage)}%</div>
+            <div class="score-text">Score</div>
+          </div>
+          <div style="margin-top:12px">${riskBadge(data.latestRiskLevel)}</div>
+          <p class="text-xs text-dim mt-8">Last taken: ${formatDate(data.latestTakenAt)}</p>
+        </div>`;
+    }
+
+    // Learning progress
+    const total = data.totalModules || 0;
+    const done  = data.completedModules || 0;
+    const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+    document.getElementById('progress-fraction').textContent = `${done} / ${total}`;
+    document.getElementById('progress-bar').style.width      = pct + '%';
+    document.getElementById('progress-pct-label').textContent = `${pct}% complete`;
+
+    // Assessment history
+    const history = await API.get('/api/quiz/history');
+    if (history.length > 0) {
+      const rows = history.slice(0, 5).map(r => `
+        <tr>
+          <td>${formatDateTime(r.takenAt)}</td>
+          <td><strong class="text-white">${r.totalScore} / ${r.maxPossibleScore}</strong></td>
+          <td>${Math.round(r.percentageScore)}%</td>
+          <td>${riskBadge(r.riskLevel)}</td>
+          <td>${r.correctAnswers} / ${r.totalQuestions}</td>
+        </tr>`).join('');
+      document.getElementById('history-content').innerHTML = `
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr>
+              <th>Date</th><th>Score</th><th>Percentage</th><th>Risk Level</th><th>Correct</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    // --- Render Score Trend Chart (Line Chart) ---
+    try {
+      const trendData = await API.get('/api/dashboard/score-trend');
+      if (trendData && trendData.length > 0) {
+        const trendLabels = trendData.map((t, idx) => `Attempt ${idx + 1}`);
+        const trendScores = trendData.map(t => t.percentage);
+
+        const ctxTrend = document.getElementById('scoreTrendChart').getContext('2d');
+        const gradient = ctxTrend.createLinearGradient(0, 0, 0, 240);
+        gradient.addColorStop(0, 'rgba(45, 212, 191, 0.35)');
+        gradient.addColorStop(1, 'rgba(45, 212, 191, 0.0)');
+
+        new Chart(ctxTrend, {
+          type: 'line',
+          data: {
+            labels: trendLabels,
+            datasets: [{
+              label: 'Score Percentage (%)',
+              data: trendScores,
+              borderColor: '#2dd4bf',
+              backgroundColor: gradient,
+              borderWidth: 2.5,
+              fill: true,
+              tension: 0.35,
+              pointBackgroundColor: '#2dd4bf',
+              pointBorderColor: '#0a1628',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#0a1628',
+                borderColor: 'rgba(45, 212, 191, 0.3)',
+                borderWidth: 1,
+                titleColor: '#f1f5f9',
+                bodyColor: '#2dd4bf',
+                padding: 10,
+                callbacks: {
+                  label: ctx => ` Score: ${ctx.parsed.y}%`
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+              },
+              y: {
+                min: 0,
+                max: 100,
+                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                ticks: {
+                  color: '#94a3b8',
+                  font: { family: 'Inter', size: 11 },
+                  callback: val => val + '%'
+                }
+              }
+            }
+          }
+        });
+      } else {
+        document.getElementById('scoreTrendChart').classList.add('hidden');
+        document.getElementById('trend-empty').classList.remove('hidden');
+      }
+    } catch (e) {
+      console.warn('Trend chart loading error:', e);
+      document.getElementById('scoreTrendChart').classList.add('hidden');
+      document.getElementById('trend-empty').classList.remove('hidden');
+    }
+
+    // --- Render Category Risk Breakdown Chart (Bar Chart) ---
+    try {
+      const categoryData = await API.get('/api/dashboard/category-breakdown');
+      const hasTestedCategories = categoryData && categoryData.some(c => c.totalQuestions > 0);
+
+      if (categoryData && categoryData.length > 0 && hasTestedCategories) {
+        const catLabels = categoryData.map(c => c.categoryName);
+        const catAccuracies = categoryData.map(c => c.accuracyPercentage);
+
+        // Color bars based on risk/accuracy thresholds
+        const barColors = categoryData.map(c => {
+          if (c.accuracyPercentage >= 80) return '#4ade80'; // Emerald (Low risk)
+          if (c.accuracyPercentage >= 60) return '#fbbf24'; // Amber (Medium risk)
+          if (c.accuracyPercentage >= 40) return '#f87171'; // Coral (High risk)
+          return '#ef4444'; // Crimson (Critical risk)
+        });
+
+        const ctxCat = document.getElementById('categoryRiskChart').getContext('2d');
+        new Chart(ctxCat, {
+          type: 'bar',
+          data: {
+            labels: catLabels,
+            datasets: [{
+              label: 'Accuracy (%)',
+              data: catAccuracies,
+              backgroundColor: barColors,
+              borderRadius: 6,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#0a1628',
+                borderColor: 'rgba(56, 189, 248, 0.3)',
+                borderWidth: 1,
+                titleColor: '#f1f5f9',
+                bodyColor: '#cbd5e1',
+                padding: 10,
+                callbacks: {
+                  afterLabel: ctx => {
+                    const item = categoryData[ctx.dataIndex];
+                    return `Risk: ${item.riskLevel} (${item.correctCount}/${item.totalQuestions} correct)`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: {
+                  color: '#94a3b8',
+                  font: { family: 'Inter', size: 10 },
+                  maxRotation: 25,
+                  minRotation: 15
+                }
+              },
+              y: {
+                min: 0,
+                max: 100,
+                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                ticks: {
+                  color: '#94a3b8',
+                  font: { family: 'Inter', size: 11 },
+                  callback: val => val + '%'
+                }
+              }
+            }
+          }
+        });
+      } else {
+        document.getElementById('categoryRiskChart').classList.add('hidden');
+        document.getElementById('category-empty').classList.remove('hidden');
+      }
+    } catch (e) {
+      console.warn('Category chart loading error:', e);
+      document.getElementById('categoryRiskChart').classList.add('hidden');
+      document.getElementById('category-empty').classList.remove('hidden');
+    }
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('dashboard-content').classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    document.getElementById('loading').textContent = 'Failed to load dashboard. Please refresh.';
+  }
+})();
+</script>
+</body>
+</html>

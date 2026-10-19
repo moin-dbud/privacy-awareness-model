@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Awareness System</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<script src="/js/app.js"></script>
+<script>
+(async () => {
+  const user = await getCurrentUser();
+  if (!user) { window.location.href = '/login.html'; return; }
+  window.location.href = user.role === 'ADMIN' ? '/admin.html' : '/dashboard.html';
+})();
+</script>
+</body>
+</html>

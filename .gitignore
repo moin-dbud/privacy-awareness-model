@@ -1,0 +1,37 @@
+# Compiled class files
+target/
+*.class
+
+# Maven
+.mvn/
+mvn.cmd
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets  – NEVER commit these
+.env
+*.env
+application-local.properties
+application-secret.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Node (if any tooling is added)
+node_modules/

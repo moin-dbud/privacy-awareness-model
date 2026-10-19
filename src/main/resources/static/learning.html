@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Center â€” Privacy Awareness System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition);
+      position: relative;
+    }
+    .module-card:hover { border-color: var(--teal-500); background: var(--bg-card-hover); }
+    .module-card.done  { border-left: 3px solid var(--green-500); }
+    .module-icon { font-size: 2rem; margin-bottom: 10px; }
+    .module-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 8px; }
+
+    .reader-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+    }
+    .reader-back { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99"></div>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">ðŸ›¡ï¸</div>
+      <h2>Privacy Guard</h2>
+      <p>Security Management System</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">ðŸ“Š</span> Dashboard</a>
+      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">ðŸ“</span> Privacy Quiz</a>
+      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">ðŸ“š</span> Learning Center</a>
+      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">ðŸš¨</span> Incident Reports</a>
+      <a href="/password-checker.html" class="nav-link" data-page="password-checker"><span class="nav-icon">🔐</span> Password Checker</a>
+      <a href="/simulator.html" class="nav-link" data-page="simulator"><span class="nav-icon">🎣</span> Phishing Simulator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-username">Loadingâ€¦</div>
+          <div class="user-role" id="sidebar-role"></div>
+        </div>
+      </div>
+      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">ðŸšª Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="top-bar">
+      <div class="flex items-center gap-12">
+        <button class="hamburger" id="hamburger">â˜°</button>
+        <span class="top-bar-title">Learning Center</span>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- Module List -->
+      <div id="list-view">
+        <div class="mb-24">
+          <h1 class="mb-8">ðŸ“š Learning Center</h1>
+          <p class="text-muted">Learn about online privacy risks and how to protect yourself.</p>
+        </div>
+
+        <!-- Progress summary -->
+        <div class="card mb-24">
+          <div class="progress-label">
+            <span class="card-title">Your Progress</span>
+            <strong id="progress-text">Loadingâ€¦</strong>
+          </div>
+          <div class="progress-bar-wrap mt-8">
+            <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div id="modules-loading" class="text-muted text-sm">Loading modulesâ€¦</div>
+        <div id="modules-grid" class="modules-grid hidden"></div>
+      </div>
+
+      <!-- Module Reader -->
+      <div id="reader-view" class="hidden">
+        <div class="reader-back">
+          <button id="back-btn" class="btn btn-secondary btn-sm">â† Back to Modules</button>
+        </div>
+        <div class="reader-panel">
+          <div class="flex justify-between items-start mb-16">
+            <div>
+              <span id="reader-category" class="badge badge-open mb-8"></span>
+              <h2 id="reader-title"></h2>
+              <p class="text-xs text-dim mt-4" id="reader-meta"></p>
+            </div>
+            <button id="complete-btn" class="btn btn-primary btn-sm">Mark Complete âœ“</button>
+          </div>
+          <div id="reader-content" class="module-content"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const catIcons = {
+  PHISHING: 'ðŸŽ£', PASSWORD_SAFETY: 'ðŸ”', PRIVACY_SETTINGS: 'âš™ï¸',
+  IDENTITY_THEFT: 'ðŸ•µï¸', CYBERBULLYING: 'ðŸ›‘', OVERSHARING: 'ðŸ“¢'
+};
+
+(async () => {
+  const user = await requireAuth();
+  if (!user) return;
+  initSidebar('learning');
+  populateSidebarUser();
+  document.getElementById('logout-btn').addEventListener('click', logout);
+
+  let modules = [];
+  let currentModuleId = null;
+
+  async function loadModules() {
+    try {
+      modules = await API.get('/api/learning/modules');
+      const progress = await API.get('/api/learning/progress');
+
+      const total = progress.total || 0;
+      const done  = progress.completed || 0;
+      const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+      document.getElementById('progress-text').textContent = `${done} / ${total} (${pct}%)`;
+      document.getElementById('progress-bar').style.width = pct + '%';
+
+      const grid = document.getElementById('modules-grid');
+      grid.innerHTML = modules.map(m => `
+        <div class="module-card ${m.completed ? 'done' : ''}" id="mod-${m.id}" onclick="openModule(${m.id})">
+          <div class="module-icon">${catIcons[m.category] || 'ðŸ“–'}</div>
+          ${m.completed ? '<span class="badge badge-resolved" style="position:absolute;top:16px;right:16px">âœ“ Done</span>' : ''}
+          <h3 class="text-white">${m.title}</h3>
+          <p class="text-xs text-muted mt-4">${m.description}</p>
+          <div class="module-meta">ðŸ• ~${m.estimatedMinutes} min Â· ${m.category.replace('_', ' ')}</div>
+        </div>`).join('');
+
+      document.getElementById('modules-loading').classList.add('hidden');
+      grid.classList.remove('hidden');
+    } catch (e) {
+      document.getElementById('modules-loading').textContent = 'Failed to load modules.';
+    }
+  }
+
+  window.openModule = async (id) => {
+    currentModuleId = id;
+    try {
+      const m = await API.get(`/api/learning/modules/${id}`);
+      document.getElementById('reader-title').textContent    = m.title;
+      document.getElementById('reader-category').textContent = m.category.replace('_', ' ');
+      document.getElementById('reader-meta').textContent     = `~${m.estimatedMinutes} min read`;
+      document.getElementById('reader-content').innerHTML    = m.content;
+
+      const completeBtn = document.getElementById('complete-btn');
+      if (m.completed) {
+        completeBtn.textContent = 'âœ“ Completed';
+        completeBtn.disabled    = true;
+      } else {
+        completeBtn.textContent = 'Mark Complete âœ“';
+        completeBtn.disabled    = false;
+      }
+
+      document.getElementById('list-view').classList.add('hidden');
+      document.getElementById('reader-view').classList.remove('hidden');
+    } catch (e) { alert('Failed to load module.'); }
+  };
+
+  document.getElementById('back-btn').addEventListener('click', () => {
+    document.getElementById('reader-view').classList.add('hidden');
+    document.getElementById('list-view').classList.remove('hidden');
+    loadModules(); // refresh progress
+  });
+
+  document.getElementById('complete-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('complete-btn');
+    setLoading(btn, true);
+    try {
+      await API.post(`/api/learning/modules/${currentModuleId}/complete`);
+      btn.textContent = 'âœ“ Completed';
+      btn.disabled    = true;
+    } catch (e) { alert('Failed to mark complete.'); }
+    finally { setLoading(btn, false); }
+  });
+
+  loadModules();
+})();
+</script>
+</body>
+</html>
