@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Quiz â€” Privacy Awareness System</title>
+  <title>Privacy Quiz — Privacy Awareness System</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
     .quiz-container { max-width: 760px; }
@@ -27,16 +27,16 @@
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">ðŸ›¡ï¸</div>
+      <div class="logo-icon">🛡️</div>
       <h2>Privacy Guard</h2>
       <p>Security Management System</p>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">ðŸ“Š</span> Dashboard</a>
-      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">ðŸ“</span> Privacy Quiz</a>
-      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">ðŸ“š</span> Learning Center</a>
-      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">ðŸš¨</span> Incident Reports</a>
+      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">📝</span> Privacy Quiz</a>
+      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">📚</span> Learning Center</a>
+      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">🚨</span> Incident Reports</a>
       <a href="/password-checker.html" class="nav-link" data-page="password-checker"><span class="nav-icon">🔐</span> Password Checker</a>
       <a href="/simulator.html" class="nav-link" data-page="simulator"><span class="nav-icon">🎣</span> Phishing Simulator</a>
     </nav>
@@ -44,18 +44,18 @@
       <div class="user-pill">
         <div class="avatar" id="sidebar-avatar">?</div>
         <div class="user-info">
-          <div class="user-name" id="sidebar-username">Loadingâ€¦</div>
+          <div class="user-name" id="sidebar-username">Loading…</div>
           <div class="user-role" id="sidebar-role"></div>
         </div>
       </div>
-      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">ðŸšª Sign Out</button>
+      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">🚪 Sign Out</button>
     </div>
   </aside>
 
   <div class="main-content">
     <header class="top-bar">
       <div class="flex items-center gap-12">
-        <button class="hamburger" id="hamburger">â˜°</button>
+        <button class="hamburger" id="hamburger">☰</button>
         <span class="top-bar-title">Privacy Quiz</span>
       </div>
     </header>
@@ -65,20 +65,20 @@
 
         <!-- Start Screen -->
         <div id="start-screen">
-          <h1 class="mb-8">ðŸ“ Privacy Awareness Quiz</h1>
+          <h1 class="mb-8">📝 Privacy Awareness Quiz</h1>
           <p class="text-muted mb-24">Test your knowledge across phishing, passwords, privacy settings, identity theft, cyberbullying, and oversharing. Each correct answer earns 10 points.</p>
-          <div id="loading-questions" class="text-muted text-sm">Loading questionsâ€¦</div>
+          <div id="loading-questions" class="text-muted text-sm">Loading questions…</div>
           <div id="start-content" class="hidden">
             <div class="card mb-16">
               <div class="flex items-center gap-16">
-                <span style="font-size:2rem">ðŸŽ¯</span>
+                <span style="font-size:2rem">🎯</span>
                 <div>
                   <div class="card-title" id="question-count-label">Questions</div>
                   <p class="text-sm text-dim">Answer all questions, then submit to see your score and recommendations.</p>
                 </div>
               </div>
             </div>
-            <button id="start-btn" class="btn btn-primary btn-lg">Start Quiz â†’</button>
+            <button id="start-btn" class="btn btn-primary btn-lg">Start Quiz →</button>
           </div>
         </div>
 
@@ -99,8 +99,8 @@
             <h3 id="question-text" class="mb-16"></h3>
             <div id="options-container"></div>
             <div class="quiz-nav">
-              <button id="prev-btn" class="btn btn-secondary btn-sm">â† Previous</button>
-              <button id="next-btn" class="btn btn-primary btn-sm">Next â†’</button>
+              <button id="prev-btn" class="btn btn-secondary btn-sm">← Previous</button>
+              <button id="next-btn" class="btn btn-primary btn-sm">Next →</button>
             </div>
           </div>
 
@@ -128,8 +128,8 @@
           </div>
 
           <div class="flex gap-12">
-            <button id="retake-btn" class="btn btn-secondary">ðŸ”„ Retake Quiz</button>
-            <a href="/learning.html" class="btn btn-primary">ðŸ“š Go to Learning Center</a>
+            <button id="retake-btn" class="btn btn-secondary">🔄 Retake Quiz</button>
+            <a href="/learning.html" class="btn btn-primary">📚 Go to Learning Center</a>
           </div>
         </div>
 
@@ -151,7 +151,7 @@
   let currentIndex = 0;
   let answers = {}; // questionId -> selectedOptionId
 
-  // â”€â”€ Load Questions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Load Questions ──
   try {
     questions = await API.get('/api/quiz/questions');
     document.getElementById('loading-questions').classList.add('hidden');
@@ -162,7 +162,7 @@
     return;
   }
 
-  // â”€â”€ Start Quiz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Start Quiz ──
   document.getElementById('start-btn').addEventListener('click', () => {
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('quiz-screen').classList.remove('hidden');
@@ -223,7 +223,7 @@
     if (currentIndex < questions.length - 1) { currentIndex++; renderQuestion(); }
   });
 
-  // â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Submit ──
   document.getElementById('submit-quiz-btn').addEventListener('click', async () => {
     const unanswered = questions.filter(q => !answers[q.id]);
     if (unanswered.length > 0) {
@@ -259,7 +259,7 @@
         <div class="score-pct">${pct}%</div>
         <div class="score-text">Score</div>
       </div>
-      <p class="text-sm text-muted mt-12">${r.correctAnswers} / ${r.totalQuestions} correct Â· ${r.totalScore} / ${r.maxPossibleScore} points</p>`;
+      <p class="text-sm text-muted mt-12">${r.correctAnswers} / ${r.totalQuestions} correct · ${r.totalScore} / ${r.maxPossibleScore} points</p>`;
 
     document.getElementById('risk-badge-container').innerHTML = riskBadge(r.riskLevel);
 
@@ -273,12 +273,12 @@
       <div class="result-feedback">
         <div class="flex justify-between items-center">
           <strong class="text-sm">${i + 1}. ${f.questionText}</strong>
-          <span class="${f.correct ? 'text-green' : 'text-red'} text-sm">${f.correct ? 'âœ…' : 'âŒ'}</span>
+          <span class="${f.correct ? 'text-green' : 'text-red'} text-sm">${f.correct ? '✅' : '❌'}</span>
         </div>
         <div class="text-xs mt-4" style="color:${f.correct ? 'var(--green-400)' : 'var(--red-400)'}">
           Your answer: ${f.selectedAnswer}
         </div>
-        ${!f.correct ? `<div class="text-xs mt-2 text-teal">âœ“ Correct: ${f.correctAnswer}</div>` : ''}
+        ${!f.correct ? `<div class="text-xs mt-2 text-teal">✓ Correct: ${f.correctAnswer}</div>` : ''}
         <div class="explanation">${f.explanation || ''}</div>
       </div>`).join('');
   }

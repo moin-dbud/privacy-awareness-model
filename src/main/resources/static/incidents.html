@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Incident Reports â€” Privacy Awareness System</title>
+  <title>Incident Reports — Privacy Awareness System</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,16 +11,16 @@
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">ðŸ›¡ï¸</div>
+      <div class="logo-icon">🛡️</div>
       <h2>Privacy Guard</h2>
       <p>Security Management System</p>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">ðŸ“Š</span> Dashboard</a>
-      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">ðŸ“</span> Privacy Quiz</a>
-      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">ðŸ“š</span> Learning Center</a>
-      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">ðŸš¨</span> Incident Reports</a>
+      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">📝</span> Privacy Quiz</a>
+      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">📚</span> Learning Center</a>
+      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">🚨</span> Incident Reports</a>
       <a href="/password-checker.html" class="nav-link" data-page="password-checker"><span class="nav-icon">🔐</span> Password Checker</a>
       <a href="/simulator.html" class="nav-link" data-page="simulator"><span class="nav-icon">🎣</span> Phishing Simulator</a>
     </nav>
@@ -28,18 +28,18 @@
       <div class="user-pill">
         <div class="avatar" id="sidebar-avatar">?</div>
         <div class="user-info">
-          <div class="user-name" id="sidebar-username">Loadingâ€¦</div>
+          <div class="user-name" id="sidebar-username">Loading…</div>
           <div class="user-role" id="sidebar-role"></div>
         </div>
       </div>
-      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">ðŸšª Sign Out</button>
+      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">🚪 Sign Out</button>
     </div>
   </aside>
 
   <div class="main-content">
     <header class="top-bar">
       <div class="flex items-center gap-12">
-        <button class="hamburger" id="hamburger">â˜°</button>
+        <button class="hamburger" id="hamburger">☰</button>
         <span class="top-bar-title">Incident Reports</span>
       </div>
       <div class="top-bar-actions">
@@ -52,12 +52,12 @@
       <!-- Incident list view -->
       <div id="list-view">
         <div class="mb-24">
-          <h1 class="mb-8">ðŸš¨ Security Incident Reports</h1>
+          <h1 class="mb-8">🚨 Security Incident Reports</h1>
           <p class="text-muted">Report suspicious messages, impersonation, or potential account compromises.</p>
         </div>
 
         <div id="alert-list" class="alert hidden"></div>
-        <div id="incidents-loading" class="text-muted text-sm">Loading reportsâ€¦</div>
+        <div id="incidents-loading" class="text-muted text-sm">Loading reports…</div>
         <div id="incidents-table-wrap" class="card hidden">
           <div id="incidents-content"></div>
         </div>
@@ -66,7 +66,7 @@
       <!-- New report form -->
       <div id="form-view" class="hidden">
         <div class="mb-20">
-          <button id="back-from-form-btn" class="btn btn-secondary btn-sm mb-16">â† Back</button>
+          <button id="back-from-form-btn" class="btn btn-secondary btn-sm mb-16">← Back</button>
           <h1 class="mb-4">Report an Incident</h1>
           <p class="text-muted">Provide details about the security incident you experienced.</p>
         </div>
@@ -78,7 +78,7 @@
             <div class="form-group">
               <label class="form-label" for="incidentType">Incident Type *</label>
               <select id="incidentType" class="form-select" required>
-                <option value="">â€” Select type â€”</option>
+                <option value="">— Select type —</option>
                 <option value="SUSPICIOUS_MESSAGE">Suspicious Message</option>
                 <option value="IMPERSONATION">Impersonation / Fake Profile</option>
                 <option value="ACCOUNT_COMPROMISE">Account Compromise</option>
@@ -91,7 +91,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="title">Title * <span class="text-dim">(10â€“200 chars)</span></label>
+              <label class="form-label" for="title">Title * <span class="text-dim">(10–200 chars)</span></label>
               <input id="title" class="form-input" type="text" placeholder="Brief description of the incident" required>
               <div id="title-error" class="form-error"></div>
             </div>
@@ -109,7 +109,7 @@
             </div>
 
             <div class="alert alert-warning" style="font-size:0.8rem">
-              âš ï¸ <strong>Educational prototype:</strong> Reports are for awareness training only. For real emergencies, contact cybercrime authorities or the platform's support team directly.
+              ⚠️ <strong>Educational prototype:</strong> Reports are for awareness training only. For real emergencies, contact cybercrime authorities or the platform's support team directly.
             </div>
 
             <button id="submit-btn" class="btn btn-primary btn-full mt-16" type="submit">Submit Report</button>
@@ -138,7 +138,7 @@
 
       if (reports.length === 0) {
         wrap.innerHTML = `<div class="empty-state">
-          <div class="empty-icon">ðŸš¨</div>
+          <div class="empty-icon">🚨</div>
           <h3>No reports yet</h3>
           <p>Submit a report if you experience a security incident.</p>
         </div>`;
@@ -147,10 +147,10 @@
           <tr>
             <td>${r.incidentType.replace('_', ' ')}</td>
             <td><strong class="text-white">${r.title}</strong></td>
-            <td>${r.platform || 'â€”'}</td>
+            <td>${r.platform || '—'}</td>
             <td>${statusBadge(r.status)}</td>
             <td>${formatDate(r.reportedAt)}</td>
-            <td>${r.adminNotes ? `<span class="text-xs text-muted">${r.adminNotes.substring(0,50)}â€¦</span>` : 'â€”'}</td>
+            <td>${r.adminNotes ? `<span class="text-xs text-muted">${r.adminNotes.substring(0,50)}…</span>` : '—'}</td>
           </tr>`).join('');
         document.getElementById('incidents-content').innerHTML = `
           <div class="table-wrap">
@@ -170,7 +170,7 @@
 
   loadReports();
 
-  // â”€â”€ Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Form ──
   document.getElementById('new-report-btn').addEventListener('click', () => {
     document.getElementById('list-view').classList.add('hidden');
     document.getElementById('form-view').classList.remove('hidden');
@@ -212,7 +212,7 @@
         description: desc,
         platform: document.getElementById('platform').value.trim() || null
       });
-      showAlert(alertEl, 'âœ… Report submitted successfully!', 'success');
+      showAlert(alertEl, '✅ Report submitted successfully!', 'success');
       document.getElementById('report-form').reset();
       setTimeout(() => {
         document.getElementById('form-view').classList.add('hidden');

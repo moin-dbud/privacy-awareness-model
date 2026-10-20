@@ -3,6 +3,7 @@ package com.privacy.controller;
 import com.privacy.dto.*;
 import com.privacy.entity.IncidentReport;
 import com.privacy.entity.QuizQuestion;
+import com.privacy.repository.LearningModuleRepository;
 import com.privacy.repository.QuizQuestionRepository;
 import com.privacy.repository.UserRepository;
 import com.privacy.service.DashboardService;
@@ -30,6 +31,7 @@ public class AdminController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final QuizQuestionRepository questionRepository;
+    private final LearningModuleRepository moduleRepository;
 
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getAdminSummary() {
@@ -114,6 +116,31 @@ public class AdminController {
             q.setActive(!q.isActive());
             questionRepository.save(q);
             return ResponseEntity.ok(Map.of("id", q.getId(), "active", q.isActive()));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/modules")
+    public ResponseEntity<?> getAllModules() {
+        return ResponseEntity.ok(moduleRepository.findAll().stream()
+                .sorted(java.util.Comparator.comparingInt(com.privacy.entity.LearningModule::getDisplayOrder))
+                .map(m -> Map.of(
+                        "id", m.getId(),
+                        "title", m.getTitle(),
+                        "category", m.getCategory().name(),
+                        "estimatedMinutes", m.getEstimatedMinutes(),
+                        "displayOrder", m.getDisplayOrder(),
+                        "active", m.isActive(),
+                        "description", m.getDescription() != null ? m.getDescription() : ""
+                ))
+                .toList());
+    }
+
+    @PatchMapping("/modules/{id}/toggle")
+    public ResponseEntity<?> toggleModule(@PathVariable Long id) {
+        return moduleRepository.findById(id).map(m -> {
+            m.setActive(!m.isActive());
+            moduleRepository.save(m);
+            return ResponseEntity.ok(Map.of("id", m.getId(), "active", m.isActive()));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Learning Center â€” Privacy Awareness System</title>
+  <title>Learning Center — Privacy Awareness System</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
     .modules-grid {
@@ -39,16 +39,16 @@
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">ðŸ›¡ï¸</div>
+      <div class="logo-icon">🛡️</div>
       <h2>Privacy Guard</h2>
       <p>Security Management System</p>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">ðŸ“Š</span> Dashboard</a>
-      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">ðŸ“</span> Privacy Quiz</a>
-      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">ðŸ“š</span> Learning Center</a>
-      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">ðŸš¨</span> Incident Reports</a>
+      <a href="/dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/quiz.html"      class="nav-link" data-page="quiz">     <span class="nav-icon">📝</span> Privacy Quiz</a>
+      <a href="/learning.html"  class="nav-link" data-page="learning"> <span class="nav-icon">📚</span> Learning Center</a>
+      <a href="/incidents.html" class="nav-link" data-page="incidents"><span class="nav-icon">🚨</span> Incident Reports</a>
       <a href="/password-checker.html" class="nav-link" data-page="password-checker"><span class="nav-icon">🔐</span> Password Checker</a>
       <a href="/simulator.html" class="nav-link" data-page="simulator"><span class="nav-icon">🎣</span> Phishing Simulator</a>
     </nav>
@@ -56,18 +56,18 @@
       <div class="user-pill">
         <div class="avatar" id="sidebar-avatar">?</div>
         <div class="user-info">
-          <div class="user-name" id="sidebar-username">Loadingâ€¦</div>
+          <div class="user-name" id="sidebar-username">Loading…</div>
           <div class="user-role" id="sidebar-role"></div>
         </div>
       </div>
-      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">ðŸšª Sign Out</button>
+      <button id="logout-btn" class="btn btn-secondary btn-full btn-sm">🚪 Sign Out</button>
     </div>
   </aside>
 
   <div class="main-content">
     <header class="top-bar">
       <div class="flex items-center gap-12">
-        <button class="hamburger" id="hamburger">â˜°</button>
+        <button class="hamburger" id="hamburger">☰</button>
         <span class="top-bar-title">Learning Center</span>
       </div>
     </header>
@@ -76,7 +76,7 @@
       <!-- Module List -->
       <div id="list-view">
         <div class="mb-24">
-          <h1 class="mb-8">ðŸ“š Learning Center</h1>
+          <h1 class="mb-8">📚 Learning Center</h1>
           <p class="text-muted">Learn about online privacy risks and how to protect yourself.</p>
         </div>
 
@@ -84,21 +84,21 @@
         <div class="card mb-24">
           <div class="progress-label">
             <span class="card-title">Your Progress</span>
-            <strong id="progress-text">Loadingâ€¦</strong>
+            <strong id="progress-text">Loading…</strong>
           </div>
           <div class="progress-bar-wrap mt-8">
             <div class="progress-bar" id="progress-bar" style="width:0%"></div>
           </div>
         </div>
 
-        <div id="modules-loading" class="text-muted text-sm">Loading modulesâ€¦</div>
+        <div id="modules-loading" class="text-muted text-sm">Loading modules…</div>
         <div id="modules-grid" class="modules-grid hidden"></div>
       </div>
 
       <!-- Module Reader -->
       <div id="reader-view" class="hidden">
         <div class="reader-back">
-          <button id="back-btn" class="btn btn-secondary btn-sm">â† Back to Modules</button>
+          <button id="back-btn" class="btn btn-secondary btn-sm">← Back to Modules</button>
         </div>
         <div class="reader-panel">
           <div class="flex justify-between items-start mb-16">
@@ -107,7 +107,7 @@
               <h2 id="reader-title"></h2>
               <p class="text-xs text-dim mt-4" id="reader-meta"></p>
             </div>
-            <button id="complete-btn" class="btn btn-primary btn-sm">Mark Complete âœ“</button>
+            <button id="complete-btn" class="btn btn-primary btn-sm">Mark Complete ✓</button>
           </div>
           <div id="reader-content" class="module-content"></div>
         </div>
@@ -119,8 +119,8 @@
 <script src="/js/app.js"></script>
 <script>
 const catIcons = {
-  PHISHING: 'ðŸŽ£', PASSWORD_SAFETY: 'ðŸ”', PRIVACY_SETTINGS: 'âš™ï¸',
-  IDENTITY_THEFT: 'ðŸ•µï¸', CYBERBULLYING: 'ðŸ›‘', OVERSHARING: 'ðŸ“¢'
+  PHISHING: '🎣', PASSWORD_SAFETY: '🔑', PRIVACY_SETTINGS: '⚙️',
+  IDENTITY_THEFT: '🕵️', CYBERBULLYING: '🛑', OVERSHARING: '📢'
 };
 
 (async () => {
@@ -147,11 +147,11 @@ const catIcons = {
       const grid = document.getElementById('modules-grid');
       grid.innerHTML = modules.map(m => `
         <div class="module-card ${m.completed ? 'done' : ''}" id="mod-${m.id}" onclick="openModule(${m.id})">
-          <div class="module-icon">${catIcons[m.category] || 'ðŸ“–'}</div>
-          ${m.completed ? '<span class="badge badge-resolved" style="position:absolute;top:16px;right:16px">âœ“ Done</span>' : ''}
+          <div class="module-icon">${catIcons[m.category] || '📖'}</div>
+          ${m.completed ? '<span class="badge badge-resolved" style="position:absolute;top:16px;right:16px">✓ Done</span>' : ''}
           <h3 class="text-white">${m.title}</h3>
           <p class="text-xs text-muted mt-4">${m.description}</p>
-          <div class="module-meta">ðŸ• ~${m.estimatedMinutes} min Â· ${m.category.replace('_', ' ')}</div>
+          <div class="module-meta">⏱️ ~${m.estimatedMinutes} min · ${m.category.replace('_', ' ')}</div>
         </div>`).join('');
 
       document.getElementById('modules-loading').classList.add('hidden');
@@ -172,10 +172,10 @@ const catIcons = {
 
       const completeBtn = document.getElementById('complete-btn');
       if (m.completed) {
-        completeBtn.textContent = 'âœ“ Completed';
+        completeBtn.textContent = '✓ Completed';
         completeBtn.disabled    = true;
       } else {
-        completeBtn.textContent = 'Mark Complete âœ“';
+        completeBtn.textContent = 'Mark Complete ✓';
         completeBtn.disabled    = false;
       }
 
@@ -195,7 +195,7 @@ const catIcons = {
     setLoading(btn, true);
     try {
       await API.post(`/api/learning/modules/${currentModuleId}/complete`);
-      btn.textContent = 'âœ“ Completed';
+      btn.textContent = '✓ Completed';
       btn.disabled    = true;
     } catch (e) { alert('Failed to mark complete.'); }
     finally { setLoading(btn, false); }
