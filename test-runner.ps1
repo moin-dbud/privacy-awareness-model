@@ -1,4 +1,4 @@
-﻿# test-runner.ps1
+# test-runner.ps1
 $baseUrl = "http://localhost:8080"
 $results = [System.Collections.Generic.List[PSObject]]::new()
 
@@ -226,6 +226,15 @@ try {
 $act2 = if ($usersForbidden) { "HTTP 403 Forbidden received" } else { "Access allowed or wrong status" }
 Add-TestResult "Security: User Alpha Access /api/admin/users" "HTTP 403 Forbidden" $act2 $usersForbidden
 
+$adminPageForbidden = $false
+try {
+    $null = Invoke-WebRequest -Uri "$baseUrl/admin.html" -WebSession $loginSessionA -UseBasicParsing
+} catch {
+    $adminPageForbidden = ($_.Exception.Response.StatusCode.value__ -eq 403)
+}
+$actPage = if ($adminPageForbidden) { "HTTP 403 Forbidden received" } else { "Access allowed or wrong status" }
+Add-TestResult "Security: User Alpha Access /admin.html" "HTTP 403 Forbidden" $actPage $adminPageForbidden
+
 # 16. Security Check: Cross-User Isolation (User Beta vs User Alpha)
 $loginSessionB = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 $null = Invoke-WebRequest -Uri "$baseUrl/login.html" -WebSession $loginSessionB -UseBasicParsing
@@ -350,6 +359,24 @@ try {
     Add-TestResult "Admin Question Toggle" "Toggle question active status" "Toggled to: $($toggled1.active), Toggled back: $($toggled2.active)" ($toggled1.active -ne $toggled2.active)
 } catch {
     Add-TestResult "Admin Question Toggle" "Toggle active" "Exception: $($_.Exception.Message)" $false
+}
+
+# Admin Learning Modules Retrieval
+try {
+    $adminModules = Invoke-RestMethod -Uri "$baseUrl/api/admin/modules" -Method Get -WebSession $loginSessionAdmin
+    Add-TestResult "Admin Learning Modules Retrieval" "All 6 learning modules returned" "Module count: $($adminModules.Count)" ($adminModules.Count -eq 6)
+} catch {
+    Add-TestResult "Admin Learning Modules Retrieval" "6 modules" "Exception: $($_.Exception.Message)" $false
+}
+
+# Admin Learning Module Toggle
+try {
+    $csrfAdmin = ($loginSessionAdmin.Cookies.GetCookies($baseUrl) | Where-Object { $_.Name -eq "XSRF-TOKEN" }).Value
+    $modToggled1 = Invoke-RestMethod -Uri "$baseUrl/api/admin/modules/1/toggle" -Method Patch -Headers @{ "X-XSRF-TOKEN" = $csrfAdmin; "Content-Type" = "application/json" } -WebSession $loginSessionAdmin
+    $modToggled2 = Invoke-RestMethod -Uri "$baseUrl/api/admin/modules/1/toggle" -Method Patch -Headers @{ "X-XSRF-TOKEN" = $csrfAdmin; "Content-Type" = "application/json" } -WebSession $loginSessionAdmin
+    Add-TestResult "Admin Learning Module Toggle" "Toggle learning module active status" "Toggled to: $($modToggled1.active), Toggled back: $($modToggled2.active)" ($modToggled1.active -ne $modToggled2.active)
+} catch {
+    Add-TestResult "Admin Learning Module Toggle" "Toggle active" "Exception: $($_.Exception.Message)" $false
 }
 
 # 19. Security Check: Error Hygiene & Stack Trace Prevention

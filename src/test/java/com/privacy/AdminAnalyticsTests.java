@@ -82,6 +82,7 @@ class AdminAnalyticsTests {
     }
 
     @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
     void testAdminModulesManagement() {
         ResponseEntity<?> response = adminController.getAllModules();
         assertEquals(HttpStatus.OK, response.getStatusCode());

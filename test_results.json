@@ -2,31 +2,31 @@
     {
         "Feature":  "CSRF Token Generation",
         "Expected":  "XSRF-TOKEN cookie returned",
-        "Actual":  "Token received (4ab91599...)",
+        "Actual":  "Token received (03b7fcd7...)",
         "Status":  "PASS"
     },
     {
         "Feature":  "User Registration (User Alpha)",
         "Expected":  "HTTP 201, User created, password omitted",
-        "Actual":  "User ID 5, username user_alpha_10335, password omitted: True",
+        "Actual":  "User ID 10, username user_alpha_78242, password omitted: True",
         "Status":  "PASS"
     },
     {
         "Feature":  "User Registration (User Beta)",
         "Expected":  "HTTP 201, User created",
-        "Actual":  "User ID 6, username user_beta_10335",
+        "Actual":  "User ID 11, username user_beta_78242",
         "Status":  "PASS"
     },
     {
         "Feature":  "User Alpha Login",
         "Expected":  "HTTP 200, JSESSIONID issued",
-        "Actual":  "Logged in as user_alpha_10335, JSESSIONID present: True",
+        "Actual":  "Logged in as user_alpha_78242, JSESSIONID present: True",
         "Status":  "PASS"
     },
     {
         "Feature":  "User Profile (/api/auth/me)",
         "Expected":  "HTTP 200 with User Alpha profile",
-        "Actual":  "Username: user_alpha_10335, Role: USER",
+        "Actual":  "Username: user_alpha_78242, Role: USER",
         "Status":  "PASS"
     },
     {
@@ -38,7 +38,7 @@
     {
         "Feature":  "Quiz Submission",
         "Expected":  "HTTP 200, score and risk level calculated",
-        "Actual":  "Result ID: 3, Score: 10/150, Risk: CRITICAL",
+        "Actual":  "Result ID: 6, Score: 10/150, Risk: CRITICAL",
         "Status":  "PASS"
     },
     {
@@ -74,13 +74,13 @@
     {
         "Feature":  "Submit Incident Report",
         "Expected":  "HTTP 201, Report status OPEN",
-        "Actual":  "Report ID: 3, Status: OPEN, ReportedBy: user_alpha_10335",
+        "Actual":  "Report ID: 4, Status: OPEN, ReportedBy: user_alpha_78242",
         "Status":  "PASS"
     },
     {
         "Feature":  "User Incident Reports List",
         "Expected":  "Contains User Alpha report",
-        "Actual":  "Count: 1, First ID: 3",
+        "Actual":  "Count: 1, First ID: 4",
         "Status":  "PASS"
     },
     {
@@ -91,6 +91,12 @@
     },
     {
         "Feature":  "Security: User Alpha Access /api/admin/users",
+        "Expected":  "HTTP 403 Forbidden",
+        "Actual":  "HTTP 403 Forbidden received",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Security: User Alpha Access /admin.html",
         "Expected":  "HTTP 403 Forbidden",
         "Actual":  "HTTP 403 Forbidden received",
         "Status":  "PASS"
@@ -128,13 +134,13 @@
     {
         "Feature":  "Admin Summary API",
         "Expected":  "System metrics returned",
-        "Actual":  "Users: 6, Assessments: 3, Open Incidents: 2",
+        "Actual":  "Users: 5, Assessments: 3, Open Incidents: 2",
         "Status":  "PASS"
     },
     {
         "Feature":  "Admin Users List",
         "Expected":  "List of users with roles, no password hashes",
-        "Actual":  "User count: 6, password hash exposed: False",
+        "Actual":  "User count: 5, password hash exposed: False",
         "Status":  "PASS"
     },
     {
@@ -146,6 +152,18 @@
     {
         "Feature":  "Admin Question Toggle",
         "Expected":  "Toggle question active status",
+        "Actual":  "Toggled to: False, Toggled back: True",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Admin Learning Modules Retrieval",
+        "Expected":  "All 6 learning modules returned",
+        "Actual":  "Module count: 6",
+        "Status":  "PASS"
+    },
+    {
+        "Feature":  "Admin Learning Module Toggle",
+        "Expected":  "Toggle learning module active status",
         "Actual":  "Toggled to: False, Toggled back: True",
         "Status":  "PASS"
     },

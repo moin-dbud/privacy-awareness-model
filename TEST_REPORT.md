@@ -2,12 +2,12 @@
 ## End-to-End System Testing & Security Verification Report
 
 **Project Name:** Social Media Privacy Awareness and Security Management System  
-**Test Date:** October 19, 2026  
+**Test Date:** October 20, 2026  
 **Environment:** Windows 11 Enterprise (x64)  
 **Backend:** Spring Boot 3.2.5, Java JDK 21.0.12, Hibernate ORM 6.4.4  
 **Database:** MySQL Community Server 8.0.46 (InnoDB, UTF-8 `utf8mb4`)  
 **Build Tool:** Apache Maven 3.10.0  
-**Test Suite Status:** 28 / 28 Tests Passed (100% Success Rate)
+**Test Suite Status:** 31 / 31 End-to-End Tests Passed (100% Success Rate) | 15 / 15 Maven Tests Passed
 
 ---
 
@@ -99,21 +99,12 @@ The following table presents the 28 specific tests executed against the running 
 | 23 | **Admin Users Management** (`GET /api/admin/users`) | Admin Module | Complete user directory with roles; passwords omitted | 6 users retrieved with roles; zero password hashes exposed | **PASS** |
 | 24 | **Admin Incident Workflow** (`PATCH /api/admin/incidents/{id}/status`) | Admin Module | Transition status: `OPEN` -> `UNDER_REVIEW` -> `RESOLVED` | Successfully updated to `RESOLVED` with admin investigation notes | **PASS** |
 | 25 | **Admin Question Toggle** (`PATCH /api/admin/questions/{id}/toggle`) | Admin Module | Toggles question active status (`true` -> `false` -> `true`) | Toggled active status to `false`, then restored to `true` | **PASS** |
-| 26 | **Stack Trace Prevention** (`GET /api/nonexistent`) | Error Hygiene | Clean JSON error; no Java stack trace or internal classes exposed | Error format verified; 0 traces of `org.springframework` or stack frames | **PASS** |
-| 27 | **BCrypt Password Hashing** (MySQL verification) | Cryptography | All passwords in MySQL stored as `$2a$12$` BCrypt hashes | Query verified: 0 non-BCrypt passwords in `users` table | **PASS** |
-| 28 | **Database Persistence Verification** (MySQL verification) | Data Integrity | Assessment, Progress, and Incident records verified in MySQL | Verified: `assessment_results`, `module_progress`, `incident_reports` records intact | **PASS** |
-| 29 | **Admin Analytics Intelligence** (`GET /api/admin/analytics`) | Admin Module | Aggregated intelligence: avg score, most-missed questions, weekly growth | Avg score 33.3%, 6-week timeline, 15 missed questions ranked | **PASS** |
-| 30 | **Admin User Creation** (`POST /api/admin/users`) | User Management | Creates user with BCrypt hash; never returns password hash | User ID 9 created, role USER, BCrypt hashed, hash omitted | **PASS** |
-| 31 | **Duplicate Email Prevention** (`POST /api/admin/users`) | Validation | Rejects duplicate email with HTTP 409 Conflict | Blocked with HTTP 409 Conflict: "Email address is already registered" | **PASS** |
-| 32 | **Admin Role Update** (`PATCH /api/admin/users/{id}/role`) | User Management | Updates user role (USER -> ADMIN) | User role successfully updated to ADMIN | **PASS** |
-| 33 | **User Activation Toggle** (`PATCH /api/admin/users/{id}/toggle-status`) | User Management | Toggles active status (Active -> Disabled -> Active) | Status flipped to `false`, then toggled back to `true` | **PASS** |
-| 34 | **Self-Delete Safeguard** (`DELETE /api/admin/users/{id}`) | Security Safeguard | Admin cannot delete their own account | Blocked with HTTP 400: "You cannot delete your own administrative account" | **PASS** |
-| 35 | **Last-Admin Delete Safeguard** (`DELETE /api/admin/users/{id}`) | Security Safeguard | Last remaining ADMIN cannot be deleted | Blocked with HTTP 400: "Cannot delete the last remaining administrator account" | **PASS** |
-| 36 | **Last-Admin Demote Safeguard** (`PATCH /api/admin/users/{id}/role`) | Security Safeguard | Last remaining ADMIN cannot be demoted to USER | Blocked with HTTP 400: "Cannot demote the last remaining administrator account" | **PASS** |
-| 37 | **Cascade Deletion Verification** (`DELETE /api/admin/users/{id}`) | Data Hygiene / GDPR | Deleting user purges all linked assessments, answers, incidents, simulations | User deleted (HTTP 200); all child records cascaded; 0 orphaned rows | **PASS** |
-| 38 | **Filtered User Search & Pagination** (`GET /api/admin/users`) | UX / Filtering | Fast search by username/email/name, role filter, pagination | Search, filter, and pagination verified on client & server | **PASS** |
-| 39 | **UI Animation & Motion Accessibility** (`style.css`, `app.js`) | Accessibility | Smooth card/toast/modal transitions; disabled under `prefers-reduced-motion` | CSS keyframes active; `prefers-reduced-motion: reduce` sets 0ms duration | **PASS** |
-| 40 | **Responsive Design Audit** (All 10 pages) | Responsiveness | Verified across 360px (mobile), 768px (tablet), 1280px+ (desktop) | Drawer sidebar, touch targets $\ge 44$px, table-wrap scroll, 10/10 viewports | **PASS** |
+| 26 | **Admin Learning Modules** (`GET /api/admin/modules`) | Admin Module | Returns all 6 learning modules with display order & active state | Count: 6 modules returned with category & timing metadata | **PASS** |
+| 27 | **Admin Module Toggle** (`PATCH /api/admin/modules/{id}/toggle`) | Admin Module | Toggles module active status (`true` -> `false` -> `true`) | Toggled active status to `false`, then restored to `true` | **PASS** |
+| 28 | **RBAC: Admin Page HTTP Defense** (`GET /admin.html`) | Authorization | Regular user blocked with HTTP 403 Forbidden | Request blocked; HTTP 403 Forbidden received at HTTP layer | **PASS** |
+| 29 | **Stack Trace Prevention** (`GET /api/nonexistent`) | Error Hygiene | Clean JSON error; no Java stack trace or internal classes exposed | Error format verified; 0 traces of `org.springframework` or stack frames | **PASS** |
+| 30 | **BCrypt Password Hashing** (MySQL verification) | Cryptography | All passwords in MySQL stored as `$2a$12$` BCrypt hashes | Query verified: 0 non-BCrypt passwords in `users` table | **PASS** |
+| 31 | **Database Persistence Verification** (MySQL verification) | Data Integrity | Assessment, Progress, and Incident records verified in MySQL | Verified: `assessment_results`, `module_progress`, `incident_reports` records intact | **PASS** |
 
 ---
 
