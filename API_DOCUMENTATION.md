@@ -510,6 +510,12 @@ All quiz questions with active/inactive status.
 ### PATCH /api/admin/questions/{id}/toggle
 Toggle a question active/inactive.
 
+### GET /api/admin/modules
+All learning curriculum modules with active/inactive status and display order.
+
+### PATCH /api/admin/modules/{id}/toggle
+Toggle a learning module active/inactive.
+
 ---
 
 ## Error Response Format

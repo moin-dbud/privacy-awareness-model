@@ -60,13 +60,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
-                // Admin-only APIs
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // Admin-only HTML pages & APIs
+                .requestMatchers("/admin.html", "/api/admin/**").hasRole("ADMIN")
                 // All other API endpoints require authentication
                 .requestMatchers("/api/**").authenticated()
                 // HTML pages
                 .requestMatchers("/dashboard.html", "/quiz.html", "/learning.html",
-                        "/incidents.html", "/admin.html", "/password-checker.html", "/simulator.html").authenticated()
+                        "/incidents.html", "/password-checker.html", "/simulator.html").authenticated()
                 .anyRequest().permitAll()
             )
             .formLogin(form -> form.disable())

@@ -140,6 +140,7 @@
         <button class="tab-btn" data-tab="users">👥 User Management</button>
         <button class="tab-btn" data-tab="incidents">🚨 Incident Reports</button>
         <button class="tab-btn" data-tab="questions">📋 Quiz Questions</button>
+        <button class="tab-btn" data-tab="modules">📚 Learning Modules</button>
       </div>
 
       <!-- Analytics Tab -->
@@ -279,6 +280,12 @@
       <div class="tab-panel" id="tab-questions">
         <div id="questions-loading" class="text-muted text-sm">Loading…</div>
         <div id="questions-content" class="hidden"></div>
+      </div>
+
+      <!-- Modules tab -->
+      <div class="tab-panel" id="tab-modules">
+        <div id="modules-loading" class="text-muted text-sm">Loading…</div>
+        <div id="modules-content" class="hidden"></div>
       </div>
     </main>
   </div>
@@ -443,6 +450,7 @@ let currentUserObj = null;
     if (tab === 'users')     loadUsers();
     if (tab === 'incidents') loadIncidents();
     if (tab === 'questions') loadQuestions();
+    if (tab === 'modules')   loadAdminModules();
   }
 
   // Analytics by default
@@ -986,6 +994,50 @@ let currentUserObj = null;
       showToast('Updated', 'Quiz question status toggled.', 'success');
       loadQuestions();
     } catch { showToast('Error', 'Failed to toggle question.', 'error'); }
+    finally { setLoading(btn, false); }
+  };
+
+  // ── Learning Modules Logic ──
+  async function loadAdminModules() {
+    try {
+      const modules = await API.get('/api/admin/modules');
+      document.getElementById('modules-loading').classList.add('hidden');
+      const rows = modules.map(m => `
+        <tr>
+          <td>${m.id}</td>
+          <td><span class="badge" style="background:rgba(20,184,166,0.15);color:#14b8a6;text-transform:capitalize;">${m.category.replace(/_/g,' ')}</span></td>
+          <td><div style="font-weight:500;color:var(--white);">${escapeHtml(m.title)}</div></td>
+          <td>${m.estimatedMinutes} min</td>
+          <td>${m.displayOrder}</td>
+          <td>
+            <span class="${m.active ? 'toggle-active' : 'toggle-inactive'}">${m.active ? '✓ Active' : '✗ Inactive'}</span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="toggleModule(${m.id}, this)">
+              ${m.active ? 'Deactivate' : 'Activate'}
+            </button>
+          </td>
+        </tr>`).join('');
+      document.getElementById('modules-content').innerHTML = `
+        <div class="card"><div class="table-wrap"><table class="data-table">
+          <thead><tr><th>#</th><th>Category</th><th>Module Title</th><th>Est. Time</th><th>Order</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div></div>`;
+      document.getElementById('modules-content').classList.remove('hidden');
+    } catch (e) {
+      document.getElementById('modules-loading').textContent = 'Failed to load learning modules.';
+      showToast('Error', 'Failed to load learning modules.', 'error');
+    }
+  }
+
+  window.toggleModule = async (id, btn) => {
+    setLoading(btn, true);
+    try {
+      await API.patch(`/api/admin/modules/${id}/toggle`);
+      showToast('Updated', 'Learning module status toggled.', 'success');
+      loadAdminModules();
+      refreshStats();
+    } catch { showToast('Error', 'Failed to toggle module.', 'error'); }
     finally { setLoading(btn, false); }
   };
 

@@ -8,6 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
+import com.privacy.controller.AdminController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -27,6 +34,9 @@ class AdminAnalyticsTests {
 
     @Autowired
     private DashboardService dashboardService;
+
+    @Autowired
+    private AdminController adminController;
 
     @Test
     void testAdminAnalyticsReturnsCompletePayload() {
@@ -69,5 +79,30 @@ class AdminAnalyticsTests {
             assertTrue(q.getMissedPercentage() >= 0.0 && q.getMissedPercentage() <= 100.0,
                     "Missed percentage must be within 0-100%");
         }
+    }
+
+    @Test
+    void testAdminModulesManagement() {
+        ResponseEntity<?> response = adminController.getAllModules();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<?> modules = (List<?>) response.getBody();
+        assertNotNull(modules);
+        assertFalse(modules.isEmpty(), "Learning modules should be seeded");
+
+        Map<?, ?> first = (Map<?, ?>) modules.get(0);
+        Long id = (Long) first.get("id");
+        boolean initialActive = (boolean) first.get("active");
+
+        ResponseEntity<?> toggleRes = adminController.toggleModule(id);
+        assertEquals(HttpStatus.OK, toggleRes.getStatusCode());
+        Map<?, ?> toggleBody = (Map<?, ?>) toggleRes.getBody();
+        assertNotNull(toggleBody);
+        assertEquals(!initialActive, toggleBody.get("active"));
+
+        // Toggle back to restore
+        ResponseEntity<?> restoreRes = adminController.toggleModule(id);
+        Map<?, ?> restoreBody = (Map<?, ?>) restoreRes.getBody();
+        assertNotNull(restoreBody);
+        assertEquals(initialActive, restoreBody.get("active"));
     }
 }
