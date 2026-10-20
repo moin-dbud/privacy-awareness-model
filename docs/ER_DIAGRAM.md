@@ -1,155 +1,156 @@
 # Privacy Guard — Database Entity Relationship (ER) Diagram
 
-This document specifies the exact relational database structure for **Privacy Guard — Social Media Privacy Awareness and Security Management System**, mapped 1-to-1 from JPA entities to MySQL 8 tables.
+This document illustrates the relational database structure for **Privacy Guard**, mapping all 11 JPA entities directly to their MySQL tables.
 
 ---
 
-## Mermaid Entity-Relationship Diagram
+## 1. Visual Entity-Relationship Diagram
 
 ```mermaid
 erDiagram
     USERS ||--o{ ASSESSMENT_RESULTS : "takes"
     USERS ||--o{ MODULE_PROGRESS : "completes"
-    USERS ||--o{ INCIDENT_REPORTS : "files"
+    USERS ||--o{ INCIDENT_REPORTS : "submits"
     USERS ||--o{ SIMULATION_RESULTS : "attempts"
 
     QUIZ_QUESTIONS ||--|{ QUIZ_OPTIONS : "contains"
     QUIZ_QUESTIONS ||--o{ ASSESSMENT_ANSWERS : "evaluated_in"
     QUIZ_OPTIONS ||--o{ ASSESSMENT_ANSWERS : "selected_in"
 
-    ASSESSMENT_RESULTS ||--|{ ASSESSMENT_ANSWERS : "comprises"
+    ASSESSMENT_RESULTS ||--|{ ASSESSMENT_ANSWERS : "records"
 
     LEARNING_MODULES ||--o{ MODULE_PROGRESS : "tracked_in"
 
-    PHISHING_SCENARIOS ||--|{ PHISHING_RED_FLAGS : "has"
+    PHISHING_SCENARIOS ||--|{ PHISHING_RED_FLAGS : "defines"
     PHISHING_SCENARIOS ||--o{ SIMULATION_RESULTS : "simulated_in"
 
     USERS {
-        bigint id PK "Auto-Increment"
-        varchar username UK "Unique (3-50 chars)"
-        varchar email UK "Unique (valid email)"
-        varchar password_hash "BCrypt 12 rounds"
-        varchar full_name "Display name"
-        varchar role "USER | ADMIN"
-        boolean enabled "Account status flag"
-        datetime created_at "Audit timestamp"
-        datetime updated_at "Audit timestamp"
+        bigint id PK
+        varchar username UK
+        varchar email UK
+        varchar password_hash
+        varchar full_name
+        varchar role
+        boolean enabled
+        datetime created_at
     }
 
     QUIZ_QUESTIONS {
-        bigint id PK "Auto-Increment"
-        text question_text "Diagnostic prompt"
-        varchar category "PHISHING, PASSWORD_SAFETY, etc."
-        int points "Default 10 points"
-        boolean active "Learner visibility toggle"
-        text explanation "Educational rationale"
+        bigint id PK
+        varchar question_text
+        varchar category
+        int points
+        boolean active
+        varchar explanation
     }
 
     QUIZ_OPTIONS {
-        bigint id PK "Auto-Increment"
-        bigint question_id FK "References QUIZ_QUESTIONS(id)"
-        varchar option_text "Choice description"
-        boolean is_correct "Single correct indicator"
-        int display_order "Sequencing 1..N"
+        bigint id PK
+        bigint question_id FK
+        varchar option_text
+        boolean correct
+        int display_order
     }
 
     ASSESSMENT_RESULTS {
-        bigint id PK "Auto-Increment"
-        bigint user_id FK "References USERS(id)"
-        int total_score "Total points earned"
-        int max_possible_score "Max potential points (e.g. 150)"
-        int correct_answers "Count of correct answers"
-        int total_questions "Questions evaluated (e.g. 15)"
-        varchar risk_level "LOW | MEDIUM | HIGH | CRITICAL"
-        text recommendations "Dynamic remediation guidance"
-        datetime taken_at "Submission timestamp"
+        bigint id PK
+        bigint user_id FK
+        int total_score
+        int max_possible_score
+        int correct_answers
+        int total_questions
+        double percentage_score
+        varchar risk_level
+        varchar recommendations
+        datetime taken_at
     }
 
     ASSESSMENT_ANSWERS {
-        bigint id PK "Auto-Increment"
-        bigint assessment_result_id FK "References ASSESSMENT_RESULTS(id)"
-        bigint question_id FK "References QUIZ_QUESTIONS(id)"
-        bigint selected_option_id FK "References QUIZ_OPTIONS(id)"
-        boolean correct "Evaluated outcome"
-        int points_earned "Points awarded (0 or question.points)"
+        bigint id PK
+        bigint result_id FK
+        bigint question_id FK
+        bigint selected_option_id FK
+        boolean correct
+        int points_earned
     }
 
     LEARNING_MODULES {
-        bigint id PK "Auto-Increment"
-        varchar title "Module headline"
-        varchar category "Privacy category"
-        text description "Curriculum synopsis"
-        longtext content "HTML educational content"
-        int estimated_minutes "Reading time"
-        int display_order "Catalog sequence"
-        boolean active "Catalog visibility toggle"
-        datetime created_at "Audit timestamp"
-        datetime updated_at "Audit timestamp"
+        bigint id PK
+        varchar title
+        varchar category
+        varchar description
+        longtext content
+        int estimated_minutes
+        int display_order
+        boolean active
     }
 
     MODULE_PROGRESS {
-        bigint id PK "Auto-Increment"
-        bigint user_id FK "References USERS(id)"
-        bigint module_id FK "References LEARNING_MODULES(id)"
-        boolean completed "Completion status"
-        datetime completed_at "Completion timestamp"
+        bigint id PK
+        bigint user_id FK
+        bigint module_id FK
+        boolean completed
+        datetime completed_at
     }
 
     INCIDENT_REPORTS {
-        bigint id PK "Auto-Increment"
-        bigint user_id FK "References USERS(id)"
-        varchar incident_type "PHISHING_ATTEMPT, COMPROMISE, etc."
-        varchar title "Report summary title"
-        text description "Detailed incident narrative"
-        varchar platform "Social network platform name"
-        varchar status "OPEN | UNDER_REVIEW | RESOLVED | DISMISSED"
-        text admin_notes "Investigator resolution notes"
-        datetime reported_at "Filing timestamp"
-        datetime updated_at "Status change timestamp"
+        bigint id PK
+        bigint user_id FK
+        varchar title
+        varchar description
+        varchar incident_type
+        varchar status
+        varchar admin_notes
+        datetime reported_at
     }
 
     PHISHING_SCENARIOS {
-        bigint id PK "Auto-Increment"
-        varchar title "Scenario scenario name"
-        varchar channel "EMAIL | SMS | DIRECT_MESSAGE"
-        varchar sender "Sender address or profile handle"
-        varchar subject "Subject line if email"
-        text content "HTML or text message payload"
-        varchar difficulty "BEGINNER | INTERMEDIATE | ADVANCED"
-        text explanation "Debriefing guide"
-        boolean active "Simulator toggle"
+        bigint id PK
+        varchar title
+        varchar channel
+        varchar sender
+        varchar subject
+        longtext content
+        varchar difficulty
+        varchar explanation
+        boolean active
     }
 
     PHISHING_RED_FLAGS {
-        bigint id PK "Auto-Increment"
-        bigint scenario_id FK "References PHISHING_SCENARIOS(id)"
-        varchar flag_text "Indicator statement"
-        text description "Why indicator matters"
-        boolean correct "True indicator vs. distractor"
-        int display_order "Sequencing 1..N"
+        bigint id PK
+        bigint scenario_id FK
+        varchar flag_text
+        varchar description
+        boolean correct
+        int display_order
     }
 
     SIMULATION_RESULTS {
-        bigint id PK "Auto-Increment"
-        bigint user_id FK "References USERS(id)"
-        bigint scenario_id FK "References PHISHING_SCENARIOS(id)"
-        int score "Earned score percentage"
-        int total_possible_flags "Actual true indicators"
-        int flags_identified "Correctly flagged indicators"
-        int false_positives "Distractors erroneously chosen"
-        boolean passed "Evaluation status (score >= 70)"
-        text feedback "Performance debrief"
-        datetime taken_at "Simulation timestamp"
+        bigint id PK
+        bigint user_id FK
+        bigint scenario_id FK
+        int score
+        boolean passed
+        varchar feedback
+        datetime completed_at
     }
 ```
 
 ---
 
-## Referential Integrity & Deletion Safeguards
+## 2. Key Entity Descriptions
 
-1. **Question Deletion Policy**:
-   - `QUIZ_QUESTIONS` is protected by relational checks. If a question is referenced in `ASSESSMENT_ANSWERS`, a hard `DELETE` is blocked by the application with HTTP 400 (`BadRequestException`) to protect the integrity of historical assessment scores. Administrators are directed to toggle `active = false` instead.
-2. **Learning Module Deletion Policy**:
-   - `LEARNING_MODULES` is protected by `MODULE_PROGRESS` checks. Hard deletion of modules with existing learner progress is blocked with HTTP 400. Deactivation (`active = false`) is used to archive older curricula without corrupting user profile statistics.
-3. **User Deletion Policy**:
-   - Deleting a user account cascades to their associated assessment results, module progress, incident reports, and simulation outcomes in compliance with data privacy erasure standards.
+1. **`USERS`**: Core identity table storing user credentials, BCrypt hashes, account status (`enabled`), and authorization roles (`USER`, `ADMIN`).
+2. **`QUIZ_QUESTIONS` & `QUIZ_OPTIONS`**: The privacy questionnaire catalog. Each question contains at least 2 options, with exactly one designated as correct.
+3. **`ASSESSMENT_RESULTS` & `ASSESSMENT_ANSWERS`**: Track quiz attempts. Results record total scores, percentages, and risk classifications (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`). Answers record the specific choice submitted for each question and the points awarded.
+4. **`LEARNING_MODULES` & `MODULE_PROGRESS`**: Structured educational articles categorized by threat topic. `MODULE_PROGRESS` maintains a unique constraint on `(user_id, module_id)` ensuring accurate completion tracking.
+5. **`INCIDENT_REPORTS`**: User-submitted security incident reports. Supports status transitions (`OPEN` -> `UNDER_REVIEW` -> `RESOLVED` / `DISMISSED`) and administrator triage notes.
+6. **`PHISHING_SCENARIOS`, `PHISHING_RED_FLAGS` & `SIMULATION_RESULTS`**: Realistic social engineering exercises across email, SMS, and direct messages. Users earn points by identifying genuine red flags without selecting deceptive distractors.
+
+---
+
+## 3. Referential Integrity & Deletion Policies
+
+- **Cascading User Deletion**: Deleting a user account cascades to all assessment results, answers, incident reports, module progress, and simulation records.
+- **Relational Protection for Questions**: A quiz question cannot be hard-deleted if it is referenced in past `ASSESSMENT_ANSWERS`. The application rejects deletion with HTTP 400 Bad Request, directing the administrator to deactivate the question instead to protect student history.
+- **Relational Protection for Modules**: A learning module cannot be hard-deleted if users have recorded completion progress in `MODULE_PROGRESS`. The application rejects deletion with HTTP 400 Bad Request, advising administrators to toggle it inactive instead.
