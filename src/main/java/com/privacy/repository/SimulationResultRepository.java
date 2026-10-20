@@ -11,4 +11,6 @@ public interface SimulationResultRepository extends JpaRepository<SimulationResu
     List<SimulationResult> findByUserIdOrderByTakenAtDesc(Long userId);
     List<SimulationResult> findByUserIdAndScenarioIdOrderByTakenAtDesc(Long userId, Long scenarioId);
     long countByUserId(Long userId);
+    long countByPassedTrue();
+    long countByUserIdAndPassedTrue(Long userId);
 }

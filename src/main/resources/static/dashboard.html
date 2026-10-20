@@ -74,7 +74,8 @@
         <button class="hamburger" id="hamburger">☰</button>
         <span class="top-bar-title">Dashboard</span>
       </div>
-      <div class="top-bar-actions">
+      <div class="top-bar-actions flex gap-8">
+        <button class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()">🔒 Change Password</button>
         <a href="/quiz.html" class="btn btn-primary btn-sm">Take Quiz</a>
       </div>
     </header>
@@ -112,7 +113,26 @@
             <div class="stat-icon">🚨</div>
             <div class="stat-label">Incidents Reported</div>
             <div class="stat-value" id="stat-incidents">—</div>
+            <div class="stat-sub text-xs text-dim" id="stat-incidents-sub"></div>
           </div>
+          <div class="stat-card">
+            <div class="stat-icon">🎣</div>
+            <div class="stat-label">Phishing Simulation</div>
+            <div class="stat-value" id="stat-simulations">—</div>
+            <div class="stat-sub text-xs text-dim" id="stat-sim-rate"></div>
+          </div>
+        </div>
+
+        <!-- Actionable Personalized Recommendations -->
+        <div id="recommendations-section" class="card mb-24 hidden">
+          <div class="flex items-center justify-between mb-16">
+            <div>
+              <h3 style="font-size:1.05rem; font-weight:600;">🎯 Actionable Recommendations</h3>
+              <p class="text-xs text-dim mt-2">Tailored security actions based on your assessment results and vulnerability analysis</p>
+            </div>
+            <span class="badge" style="background:rgba(20,184,166,0.15); color:var(--teal-400);">Tailored Guidance</span>
+          </div>
+          <div id="recommendations-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;"></div>
         </div>
 
         <!-- Interactive Visualizations: Score Trend & Category Risk Breakdown -->
@@ -238,6 +258,46 @@
     document.getElementById('stat-assessments').textContent = data.totalAssessments ?? 0;
     document.getElementById('stat-modules').textContent     = `${data.completedModules ?? 0} / ${data.totalModules ?? 0}`;
     document.getElementById('stat-incidents').textContent   = data.totalIncidentReports ?? 0;
+
+    // Incidents sub breakdown
+    const openInc = data.openIncidentReports ?? 0;
+    const resolvedInc = data.resolvedIncidentReports ?? 0;
+    if (document.getElementById('stat-incidents-sub')) {
+      document.getElementById('stat-incidents-sub').textContent = `${openInc} open, ${resolvedInc} resolved`;
+    }
+
+    // Phishing simulation metrics
+    const simCount = data.totalSimulations ?? 0;
+    const simPass = data.passedSimulations ?? 0;
+    const simRate = data.simulationPassRate ?? 0;
+    document.getElementById('stat-simulations').textContent = simCount;
+    if (document.getElementById('stat-sim-rate')) {
+      document.getElementById('stat-sim-rate').textContent = simCount > 0 ? `${simPass} passed (${simRate}%)` : 'No attempts yet';
+    }
+
+    // Render Recommendations
+    if (data.recommendations && data.recommendations.length > 0) {
+      const recsList = document.getElementById('recommendations-list');
+      recsList.innerHTML = data.recommendations.map(r => {
+        const priorityColor = r.priority === 'HIGH' ? '#f87171' : (r.priority === 'MEDIUM' ? '#fbbf24' : '#2dd4bf');
+        return `
+          <div style="background:var(--navy-800); border:1px solid var(--border); border-left:4px solid ${priorityColor}; border-radius:8px; padding:16px; display:flex; flex-direction:column; justify-content:between;">
+            <div>
+              <div class="flex items-center justify-between mb-8">
+                <span class="badge" style="font-size:0.7rem; background:rgba(255,255,255,0.06); color:${priorityColor};">${r.category}</span>
+                <span style="font-size:0.7rem; color:${priorityColor}; font-weight:600;">${r.priority} PRIORITY</span>
+              </div>
+              <h4 style="font-size:0.95rem; font-weight:600; color:var(--white); margin-bottom:6px;">${escapeHtml(r.title)}</h4>
+              <p class="text-xs text-dim" style="line-height:1.5; margin-bottom:12px;">${escapeHtml(r.description)}</p>
+            </div>
+            <div>
+              <a href="${r.actionUrl}" class="btn btn-sm btn-secondary" style="width:100%; text-align:center;">${escapeHtml(r.actionText || 'Take Action')} →</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('recommendations-section').classList.remove('hidden');
+    }
 
     // Score
     if (data.latestPercentage !== undefined) {
@@ -459,5 +519,35 @@
   }
 })();
 </script>
+<!-- Change Password Modal -->
+<div id="change-password-modal" class="modal-overlay">
+  <div class="modal-card" style="max-width:440px;">
+    <div class="flex items-center justify-between mb-16">
+      <h3>🔒 Change Password</h3>
+      <button class="btn btn-sm btn-secondary" style="min-height:30px;padding:4px 10px;" onclick="closeChangePasswordModal()">✕</button>
+    </div>
+    <div id="change-pwd-alert" class="alert hidden"></div>
+    <form id="change-pwd-form" onsubmit="event.preventDefault(); submitChangePassword();">
+      <div class="form-group mb-12">
+        <label class="form-label">Current Password *</label>
+        <input type="password" id="pwd-current" class="form-input" required autocomplete="current-password">
+      </div>
+      <div class="form-group mb-12">
+        <label class="form-label">New Password *</label>
+        <input type="password" id="pwd-new" class="form-input" required minlength="8" autocomplete="new-password">
+        <small class="text-dim text-xs">Min 8 chars, including uppercase, lowercase, digit, and special char (@$!%*?&_#).</small>
+      </div>
+      <div class="form-group mb-20">
+        <label class="form-label">Confirm New Password *</label>
+        <input type="password" id="pwd-confirm" class="form-input" required minlength="8" autocomplete="new-password">
+      </div>
+      <div class="flex gap-12 justify-end">
+        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">Cancel</button>
+        <button type="submit" id="pwd-submit-btn" class="btn btn-primary">Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>

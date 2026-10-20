@@ -211,3 +211,69 @@ function animateCounter(el, target, duration = 800, suffix = '') {
   }
   requestAnimationFrame(update);
 }
+
+/* ── HTML Escaping ──────────────────────────────────────────────────────── */
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ── Change Password Modal Logic ────────────────────────────────────────── */
+function openChangePasswordModal() {
+  const modal = document.getElementById('change-password-modal');
+  if (!modal) return;
+  const form = document.getElementById('change-pwd-form');
+  if (form) form.reset();
+  const alertEl = document.getElementById('change-pwd-alert');
+  if (alertEl) alertEl.classList.add('hidden');
+  modal.classList.add('active');
+}
+
+function closeChangePasswordModal() {
+  const modal = document.getElementById('change-password-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+async function submitChangePassword() {
+  const currentPassword = document.getElementById('pwd-current')?.value;
+  const newPassword = document.getElementById('pwd-new')?.value;
+  const confirmPassword = document.getElementById('pwd-confirm')?.value;
+  const alertEl = document.getElementById('change-pwd-alert');
+  const btn = document.getElementById('pwd-submit-btn');
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    if (alertEl) showAlert(alertEl, 'Please fill in all password fields.');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    if (alertEl) showAlert(alertEl, 'New password and confirmation do not match.');
+    return;
+  }
+  if (newPassword.length < 8) {
+    if (alertEl) showAlert(alertEl, 'Password must be at least 8 characters.');
+    return;
+  }
+
+  if (btn) setLoading(btn, true);
+  try {
+    const res = await API.post('/api/auth/change-password', {
+      currentPassword,
+      newPassword,
+      confirmPassword
+    });
+    closeChangePasswordModal();
+    showToast('Password Updated', res?.message || 'Password changed successfully.', 'success');
+  } catch (e) {
+    const msg = e.data?.message || e.message || 'Failed to update password.';
+    if (alertEl) showAlert(alertEl, msg);
+    showToast('Error', msg, 'error');
+  } finally {
+    if (btn) setLoading(btn, false);
+  }
+}
+

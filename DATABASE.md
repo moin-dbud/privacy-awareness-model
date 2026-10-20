@@ -153,5 +153,18 @@ SELECT id, title, category, estimated_minutes FROM learning_modules;
 | `Access denied for user 'privacy_user'@'localhost'` | Incorrect password in `.env` or user not created | Double-check the password in `.env` matches what you set in `CREATE USER`. Re-run `ALTER USER 'privacy_user'@'localhost' IDENTIFIED BY 'YOUR_PASSWORD'; FLUSH PRIVILEGES;` |
 | `Communications link failure` | MySQL Windows service is stopped | Start the service in an Administrator PowerShell: `Start-Service MySQL80` or `net start MySQL80`. |
 | `Unknown database 'privacy_awareness_db'` | Database was not created | Run `CREATE DATABASE privacy_awareness_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;` in MySQL Workbench. |
+| Admin password changed in `.env` but cannot log in | `.env` credentials are only seeded on fresh installs | Use runtime password change via `POST /api/auth/change-password`, or set `ADMIN_RECOVER=true` in `.env` and restart the server to force-sync the admin password hash. |
+| Cannot delete question/module (`400 Bad Request`) | Question or module is referenced in past student records | Expected relational integrity safeguard. Deactivate the question or module using the admin toggle button instead of hard-deleting it. |
 | Variables not reflecting in Spring Boot | Variables were set in another terminal or `. .\Set-Env.ps1` was executed without the leading dot | Run `. .\Set-Env.ps1` in the exact PowerShell terminal where you launch `mvn spring-boot:run`. |
 | `Port 8080 was already in use` | Another process is listening on 8080 | Change `SERVER_PORT=8081` in your `.env` and re-run `. .\Set-Env.ps1`. |
+
+---
+
+## 8. Entity Relationship Model & Relational Safeguards
+
+For a complete interactive visual schema diagram, entity attributes, primary keys, and foreign key constraints, see [docs/ER_DIAGRAM.md](file:///c:/Users/my/Downloads/Phishing%20System/docs/ER_DIAGRAM.md).
+
+### Relational Safeguards & Integrity Policies:
+- **`quiz_questions` ↔ `assessment_answers`**: Foreign key integrity prevents question hard-deletion if records exist in `assessment_answers`. Administrative deletion attempts return HTTP 400 with a message instructing staff to deactivate the question instead.
+- **`learning_modules` ↔ `module_progress`**: Foreign key integrity prevents module hard-deletion if user progress records exist. Administrative deletion attempts return HTTP 400.
+- **`users` ↔ Active Sessions**: Deleting or disabling (`enabled = false`) a user in MySQL immediately invalidates any active `HttpSession` via `UserAccountStatusFilter`, returning HTTP 401 on the next request.

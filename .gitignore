@@ -1,37 +1,149 @@
-# Compiled class files
-target/
-*.class
+# =============================================================================
+# Git Ignore Configuration - Privacy Guard Application
+# =============================================================================
 
-# Maven
-.mvn/
-mvn.cmd
-
-# IDE
-.idea/
-*.iml
-*.iws
-*.ipr
-.vscode/
-*.swp
-
-# Logs
-*.log
-logs/
-
-# Environment / secrets  – NEVER commit these
+# -----------------------------------------------------------------------------
+# 1. Environment & Secrets (CRITICAL: NEVER commit credentials or secrets)
+# -----------------------------------------------------------------------------
 .env
+.env.*
+!.env.example
 *.env
 application-local.properties
 application-secret.properties
+application-local.yml
+application-secret.yml
+*.pem
+*.key
+*.pkcs12
+*.pfx
+*.p12
+*.jks
+*.keystore
 
-# OS
-.DS_Store
-Thumbs.db
+# -----------------------------------------------------------------------------
+# 2. Build & Compilation Artifacts
+# -----------------------------------------------------------------------------
+target/
+bin/
+out/
+build/
+dist/
+*.class
 
 # Package files
 *.jar
 *.war
 *.ear
+*.zip
+*.tar.gz
+*.rar
 
-# Node (if any tooling is added)
+# Maven build artifacts & release files
+.mvn/
+mvn.cmd
+mvnw
+mvnw.cmd
+dependency-reduced-pom.xml
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+buildNumber.properties
+
+# -----------------------------------------------------------------------------
+# 3. IDE & Code Editor Artifacts
+# -----------------------------------------------------------------------------
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+
+# Editor temporary & swap files
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.orig
+
+# -----------------------------------------------------------------------------
+# 4. Logs, Dumps & Crash Reports
+# -----------------------------------------------------------------------------
+*.log
+logs/
+*.dump
+*.hprof
+hs_err_pid*
+replay_pid*
+
+# -----------------------------------------------------------------------------
+# 5. Runtime Test Outputs & Export Artifacts
+# -----------------------------------------------------------------------------
+test_results.json
+test-results/
+coverage/
+.nyc_output/
+incident-reports-*.csv
+incident-reports-*.pdf
+
+# -----------------------------------------------------------------------------
+# 6. Python & Virtual Environments (Helper scripts & scratch tooling)
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+scratch/
+
+# -----------------------------------------------------------------------------
+# 7. OS & System Specific Files
+# -----------------------------------------------------------------------------
+# Windows
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+.directory
+
+# -----------------------------------------------------------------------------
+# 8. Node / Frontend Tooling (if added)
+# -----------------------------------------------------------------------------
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

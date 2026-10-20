@@ -154,4 +154,25 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return user;
     }
+
+    @Transactional
+    public void changePassword(String username, com.privacy.dto.ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("New password and confirm password do not match");
+        }
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("New password must be different from current password");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 }

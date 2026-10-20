@@ -93,6 +93,36 @@ End the current session.
 
 ---
 
+### POST /api/auth/change-password
+Update the password of the currently authenticated user. Requires active session.
+
+**Request Body:**
+```json
+{
+  "currentPassword": "OldPassword@123",
+  "newPassword": "NewStrongPassword@888!",
+  "confirmPassword": "NewStrongPassword@888!"
+}
+```
+
+**Validation & Rules:**
+- `currentPassword`: Must match the user's existing password hash (verified via BCrypt).
+- `newPassword`: Minimum 8 characters, must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character. Cannot be identical to current password.
+- `confirmPassword`: Must match `newPassword`.
+
+**Success Response** `200 OK`:
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` — Incorrect current password or validation failure.
+- `401 Unauthorized` — Unauthenticated request.
+
+---
+
 ## Dashboard
 
 ### GET /api/dashboard
@@ -489,10 +519,40 @@ Activate or deactivate a user account. Deactivated accounts cannot sign in.
 **Success Response** `200 OK`: Returns updated `UserResponse` with new `enabled` boolean.
 
 ### GET /api/admin/incidents
-All incident reports.
+Retrieve all incident reports, with optional filtering by status and incident type.
+
+**Query Parameters (Optional):**
+- `status`: `OPEN`, `UNDER_REVIEW`, `RESOLVED`, `DISMISSED`
+- `type`: `PHISHING`, `DATA_LEAK`, `HARASSMENT`, `SUSPICIOUS_LOGIN`, `IMPERSONATION`, `MALWARE`, `OTHER`
+
+### GET /api/admin/incidents/export/csv
+Export incident reports as an RFC 4180-compliant CSV file with built-in spreadsheet formula injection protection.
+
+**Query Parameters (Optional):**
+- `status`: Filter by incident status
+- `type`: Filter by incident type
+
+**Security Protection:**
+- Formula characters (`=`, `+`, `-`, `@`, `\t`, `\r`) at the beginning of fields are automatically prefixed with `'` to prevent command execution in Microsoft Excel or LibreOffice Calc.
+- Emits UTF-8 Byte Order Mark (`\uFEFF`) for seamless international character rendering.
+
+**Response:** `200 OK`, `Content-Type: text/csv;charset=UTF-8`
+
+---
+
+### GET /api/admin/incidents/export/pdf
+Export incident reports as a formatted, corporate-grade landscape PDF document powered by OpenPDF.
+
+**Query Parameters (Optional):**
+- `status`: Filter by incident status
+- `type`: Filter by incident type
+
+**Response:** `200 OK`, `Content-Type: application/pdf`, `Content-Disposition: attachment; filename="incident-reports-*.pdf"`
+
+---
 
 ### PATCH /api/admin/incidents/{id}/status
-Update incident status.
+Update incident status and attach resolution notes.
 
 **Request Body:**
 ```json
@@ -504,17 +564,87 @@ Update incident status.
 
 **Status Values:** `OPEN`, `UNDER_REVIEW`, `RESOLVED`, `DISMISSED`
 
-### GET /api/admin/questions
-All quiz questions with active/inactive status.
+---
 
-### PATCH /api/admin/questions/{id}/toggle
-Toggle a question active/inactive.
+### Quiz Question Management (Full CRUD)
 
-### GET /api/admin/modules
-All learning curriculum modules with active/inactive status and display order.
+#### GET /api/admin/questions
+Retrieve all quiz questions with full option arrays, correct flags, point values, and active statuses.
 
-### PATCH /api/admin/modules/{id}/toggle
-Toggle a learning module active/inactive.
+#### GET /api/admin/questions/{id}
+Retrieve detailed information for a single quiz question by ID.
+
+#### POST /api/admin/questions
+Create a new quiz question with multiple options.
+
+**Request Body:**
+```json
+{
+  "questionText": "What should you check first when receiving an urgent email asking to verify account credentials?",
+  "category": "PHISHING_DETECTION",
+  "explanation": "Phishing emails frequently impersonate official domains. Always verify sender domain.",
+  "points": 10,
+  "active": true,
+  "options": [
+    { "optionText": "Inspect sender email header and actual URL links", "correct": true, "displayOrder": 1 },
+    { "optionText": "Click the link immediately to verify before account suspension", "correct": false, "displayOrder": 2 }
+  ]
+}
+```
+
+#### PUT /api/admin/questions/{id}
+Update an existing question and its options. Replaces option set with the provided array.
+
+#### PATCH /api/admin/questions/{id}/toggle
+Toggle question active/inactive state. Inactive questions are excluded from user assessments.
+
+#### DELETE /api/admin/questions/{id}
+Delete a quiz question.
+
+**Relational Deletion Safeguard:**
+- If the question has been answered in past student assessments (present in `assessment_answers`), hard deletion is **blocked** with `400 Bad Request` (`"Cannot delete question as it is referenced in past assessments. Deactivate it instead."`).
+- Unreferenced questions are safely removed along with their options.
+
+---
+
+### Learning Module Management (Full CRUD)
+
+#### GET /api/admin/modules
+Retrieve all learning modules with full content and display orders.
+
+#### GET /api/admin/modules/{id}
+Retrieve a single learning module by ID.
+
+#### POST /api/admin/modules
+Author a new learning curriculum module.
+
+**Request Body:**
+```json
+{
+  "title": "Securing Third-Party App Permissions",
+  "category": "PRIVACY_SETTINGS",
+  "description": "Learn how OAuth tokens and app integrations can access your profile data.",
+  "content": "<h2>OAuth & Third-Party Permissions</h2><p>Regularly audit connected applications.</p>",
+  "estimatedMinutes": 5,
+  "displayOrder": 7,
+  "active": true
+}
+```
+
+#### PUT /api/admin/modules/{id}
+Update an existing learning module.
+
+#### PATCH /api/admin/modules/{id}/toggle
+Toggle a module active/inactive in the user learning catalog.
+
+#### DELETE /api/admin/modules/{id}
+Delete a learning module.
+
+**Relational Deletion Safeguard:**
+- If student progress exists for this module in `module_progress`, hard deletion is **blocked** with `400 Bad Request` (`"Cannot delete module as users have recorded progress for it. Deactivate it instead."`).
+- Unreferenced modules are safely removed.
+
+---
 
 ---
 

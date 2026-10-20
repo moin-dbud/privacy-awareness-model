@@ -23,6 +23,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private final UserAccountStatusFilter userAccountStatusFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -80,7 +81,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .maximumSessions(5)
             )
-            .authenticationProvider(authenticationProvider());
+            .authenticationProvider(authenticationProvider())
+            .addFilterAfter(userAccountStatusFilter, org.springframework.security.web.context.SecurityContextHolderFilter.class);
 
         return http.build();
     }

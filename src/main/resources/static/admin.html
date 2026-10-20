@@ -114,7 +114,8 @@
         <button class="hamburger" id="hamburger">☰</button>
         <span class="top-bar-title">Admin Dashboard</span>
       </div>
-      <div class="top-bar-actions">
+      <div class="top-bar-actions flex items-center gap-8">
+        <button class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()">🔒 Change Password</button>
         <span class="badge badge-admin">ADMIN</span>
       </div>
     </header>
@@ -271,21 +272,138 @@
 
       <!-- Incidents tab -->
       <div class="tab-panel" id="tab-incidents">
-        <div id="incidents-alert" class="alert hidden"></div>
-        <div id="incidents-loading" class="text-muted text-sm">Loading…</div>
-        <div id="incidents-content" class="hidden"></div>
+        <div class="card mb-20">
+          <div class="flex items-center justify-between gap-16 flex-wrap mb-16">
+            <div>
+              <h3 class="mb-4">🚨 Security Incident Reports & Audit</h3>
+              <p class="text-muted text-sm">Review incoming reports, manage resolution states, and generate official audit exports.</p>
+            </div>
+            <div class="flex items-center gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="exportIncidentsCsv()">📥 Export CSV</button>
+              <button class="btn btn-primary btn-sm" onclick="exportIncidentsPdf()">📄 Export PDF</button>
+            </div>
+          </div>
+
+          <!-- Controls: Filters -->
+          <div class="flex items-center gap-12 flex-wrap mb-16" style="background:var(--navy-900);padding:14px 16px;border-radius:var(--radius);border:1px solid var(--border)">
+            <div style="min-width:160px;">
+              <select id="incident-status-filter" class="form-select" onchange="filterIncidents()" style="min-height:38px;">
+                <option value="ALL">All Statuses</option>
+                <option value="OPEN">Status: Open</option>
+                <option value="UNDER_REVIEW">Status: Under Review</option>
+                <option value="RESOLVED">Status: Resolved</option>
+                <option value="DISMISSED">Status: Dismissed</option>
+              </select>
+            </div>
+            <div style="min-width:180px;">
+              <select id="incident-type-filter" class="form-select" onchange="filterIncidents()" style="min-height:38px;">
+                <option value="ALL">All Incident Types</option>
+                <option value="PHISHING_ATTEMPT">Phishing Attempt</option>
+                <option value="ACCOUNT_COMPROMISE">Account Compromise</option>
+                <option value="SUSPICIOUS_MESSAGE">Suspicious Message</option>
+                <option value="IMPERSONATION">Impersonation</option>
+                <option value="DATA_LEAK">Data Leak</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="incidents-alert" class="alert hidden"></div>
+          <div id="incidents-loading" class="text-muted text-sm py-16">
+            <div class="skeleton skeleton-text" style="width:60%;"></div>
+          </div>
+          <div id="incidents-content" class="hidden"></div>
+        </div>
       </div>
 
       <!-- Questions tab -->
       <div class="tab-panel" id="tab-questions">
-        <div id="questions-loading" class="text-muted text-sm">Loading…</div>
-        <div id="questions-content" class="hidden"></div>
+        <div class="card mb-20">
+          <div class="flex items-center justify-between gap-16 flex-wrap mb-16">
+            <div>
+              <h3 class="mb-4">📋 Assessment Quiz Questions</h3>
+              <p class="text-muted text-sm">Create, edit, toggle, and safely remove diagnostic privacy questions.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddQuestionModal()">
+              ➕ Add Question
+            </button>
+          </div>
+
+          <!-- Question Filters -->
+          <div class="flex items-center gap-12 flex-wrap mb-16" style="background:var(--navy-900);padding:14px 16px;border-radius:var(--radius);border:1px solid var(--border)">
+            <div style="flex:1;min-width:200px;">
+              <input type="text" id="question-search-input" class="form-input" placeholder="🔍 Search questions by prompt or explanation..." oninput="filterQuestions()" style="min-height:38px;">
+            </div>
+            <div style="min-width:160px;">
+              <select id="question-category-filter" class="form-select" onchange="filterQuestions()" style="min-height:38px;">
+                <option value="ALL">All Categories</option>
+                <option value="PHISHING">Phishing Attacks</option>
+                <option value="PASSWORD_SAFETY">Password Safety</option>
+                <option value="PRIVACY_SETTINGS">Privacy Settings</option>
+                <option value="IDENTITY_THEFT">Identity Theft</option>
+                <option value="CYBERBULLYING">Cyberbullying</option>
+                <option value="OVERSHARING">Oversharing Risks</option>
+              </select>
+            </div>
+            <div style="min-width:140px;">
+              <select id="question-status-filter" class="form-select" onchange="filterQuestions()" style="min-height:38px;">
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active Only</option>
+                <option value="INACTIVE">Inactive Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="questions-loading" class="text-muted text-sm py-16">
+            <div class="skeleton skeleton-text" style="width:60%;"></div>
+          </div>
+          <div id="questions-content" class="hidden"></div>
+        </div>
       </div>
 
       <!-- Modules tab -->
       <div class="tab-panel" id="tab-modules">
-        <div id="modules-loading" class="text-muted text-sm">Loading…</div>
-        <div id="modules-content" class="hidden"></div>
+        <div class="card mb-20">
+          <div class="flex items-center justify-between gap-16 flex-wrap mb-16">
+            <div>
+              <h3 class="mb-4">📚 Learning Curricula & Modules</h3>
+              <p class="text-muted text-sm">Manage educational modules, reading duration, display sequencing, and learning content.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddModuleModal()">
+              ➕ Add Module
+            </button>
+          </div>
+
+          <!-- Module Filters -->
+          <div class="flex items-center gap-12 flex-wrap mb-16" style="background:var(--navy-900);padding:14px 16px;border-radius:var(--radius);border:1px solid var(--border)">
+            <div style="flex:1;min-width:200px;">
+              <input type="text" id="module-search-input" class="form-input" placeholder="🔍 Search modules by title or description..." oninput="filterModules()" style="min-height:38px;">
+            </div>
+            <div style="min-width:160px;">
+              <select id="module-category-filter" class="form-select" onchange="filterModules()" style="min-height:38px;">
+                <option value="ALL">All Categories</option>
+                <option value="PHISHING">Phishing Attacks</option>
+                <option value="PASSWORD_SAFETY">Password Safety</option>
+                <option value="PRIVACY_SETTINGS">Privacy Settings</option>
+                <option value="IDENTITY_THEFT">Identity Theft</option>
+                <option value="CYBERBULLYING">Cyberbullying</option>
+                <option value="OVERSHARING">Oversharing Risks</option>
+              </select>
+            </div>
+            <div style="min-width:140px;">
+              <select id="module-status-filter" class="form-select" onchange="filterModules()" style="min-height:38px;">
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active Only</option>
+                <option value="INACTIVE">Inactive Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="modules-loading" class="text-muted text-sm py-16">
+            <div class="skeleton skeleton-text" style="width:60%;"></div>
+          </div>
+          <div id="modules-content" class="hidden"></div>
+        </div>
       </div>
     </main>
   </div>
@@ -405,6 +523,200 @@
   </div>
 </div>
 
+
+<!-- Change Password Modal -->
+<div id="change-password-modal" class="modal-overlay">
+  <div class="modal-card" style="max-width:440px;">
+    <div class="flex items-center justify-between mb-16">
+      <h3>🔒 Change Password</h3>
+      <button class="btn btn-sm btn-secondary" style="min-height:30px;padding:4px 10px;" onclick="closeChangePasswordModal()">✕</button>
+    </div>
+    <div id="change-pwd-alert" class="alert hidden"></div>
+    <form id="change-pwd-form" onsubmit="event.preventDefault(); submitChangePassword();">
+      <div class="form-group mb-12">
+        <label class="form-label">Current Password *</label>
+        <input type="password" id="pwd-current" class="form-input" required autocomplete="current-password">
+      </div>
+      <div class="form-group mb-12">
+        <label class="form-label">New Password *</label>
+        <input type="password" id="pwd-new" class="form-input" required minlength="8" autocomplete="new-password">
+        <small class="text-dim text-xs">Min 8 chars, including uppercase, lowercase, digit, and special char (@$!%*?&_#).</small>
+      </div>
+      <div class="form-group mb-20">
+        <label class="form-label">Confirm New Password *</label>
+        <input type="password" id="pwd-confirm" class="form-input" required minlength="8" autocomplete="new-password">
+      </div>
+      <div class="flex gap-12 justify-end">
+        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">Cancel</button>
+        <button type="submit" id="pwd-submit-btn" class="btn btn-primary">Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Question Modal (Add / Edit) -->
+<div id="question-modal" class="modal-overlay">
+  <div class="modal-card" style="max-width:620px;max-height:90vh;overflow-y:auto;">
+    <div class="flex items-center justify-between mb-16">
+      <h3 id="question-modal-title">➕ Add Quiz Question</h3>
+      <button class="btn btn-sm btn-secondary" style="min-height:30px;padding:4px 10px;" onclick="closeQuestionModal()">✕</button>
+    </div>
+    <div id="question-modal-alert" class="alert hidden"></div>
+    <form id="question-modal-form" onsubmit="event.preventDefault(); submitQuestion();">
+      <input type="hidden" id="q-id">
+      <div class="form-group mb-12">
+        <label class="form-label">Question Text *</label>
+        <textarea id="q-text" class="form-textarea" rows="3" placeholder="Enter diagnostic question prompt..." required minlength="10" maxlength="500"></textarea>
+      </div>
+      <div class="grid grid-2 gap-12 mb-12">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select id="q-category" class="form-select" required>
+            <option value="PHISHING">Phishing Attacks</option>
+            <option value="PASSWORD_SAFETY">Password Safety</option>
+            <option value="PRIVACY_SETTINGS">Privacy Settings</option>
+            <option value="IDENTITY_THEFT">Identity Theft</option>
+            <option value="CYBERBULLYING">Cyberbullying</option>
+            <option value="OVERSHARING">Oversharing Risks</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Points</label>
+          <input type="number" id="q-points" class="form-input" value="10" min="1" max="100" required>
+        </div>
+      </div>
+      <div class="form-group mb-12">
+        <label class="form-label">Educational Explanation *</label>
+        <textarea id="q-explanation" class="form-textarea" rows="2" placeholder="Explain why the correct answer is right and why others are wrong..." required></textarea>
+      </div>
+      <div class="form-group mb-16">
+        <label class="form-label flex items-center justify-between">
+          <span>Answer Options * (select radio for the correct option)</span>
+        </label>
+        <div id="options-container" class="flex flex-col gap-8">
+          <!-- 4 option rows rendered dynamically -->
+        </div>
+      </div>
+      <div class="form-group mb-16">
+        <label class="flex items-center gap-8 cursor-pointer">
+          <input type="checkbox" id="q-active" checked>
+          <span class="text-sm text-white">Active in diagnostic quiz assessment</span>
+        </label>
+      </div>
+      <div class="flex gap-12 justify-end">
+        <button type="button" class="btn btn-secondary" onclick="closeQuestionModal()">Cancel</button>
+        <button type="submit" id="q-submit-btn" class="btn btn-primary">Save Question</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Question Confirmation Modal -->
+<div id="delete-question-modal" class="modal-overlay">
+  <div class="modal-card" style="max-width:440px;">
+    <div class="flex items-center gap-12 mb-12">
+      <div style="font-size:1.8rem;line-height:1">⚠️</div>
+      <div>
+        <h3 style="color:var(--red-400)">Confirm Question Deletion</h3>
+        <p class="text-muted text-xs">Assessment integrity safeguard</p>
+      </div>
+    </div>
+    <input type="hidden" id="del-q-id">
+    <p class="text-white text-sm mb-12">
+      Are you sure you want to delete question <strong id="del-q-preview" style="color:var(--teal-400)"></strong>?
+    </p>
+    <div class="alert alert-warning mb-16" style="font-size:0.8rem;">
+      <strong>Integrity Policy:</strong> Questions with recorded historical answers cannot be hard-deleted. They must be deactivated instead to maintain historical scores and audit compliance.
+    </div>
+    <div class="flex gap-12 justify-end">
+      <button class="btn btn-secondary" onclick="closeDeleteQuestionModal()">Cancel</button>
+      <button id="del-q-confirm-btn" class="btn" style="background:var(--red-500);color:#fff;border-color:var(--red-500);" onclick="confirmDeleteQuestion()">Delete Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- Learning Module Modal (Add / Edit) -->
+<div id="module-modal" class="modal-overlay">
+  <div class="modal-card" style="max-width:680px;max-height:90vh;overflow-y:auto;">
+    <div class="flex items-center justify-between mb-16">
+      <h3 id="module-modal-title">➕ Add Learning Module</h3>
+      <button class="btn btn-sm btn-secondary" style="min-height:30px;padding:4px 10px;" onclick="closeModuleModal()">✕</button>
+    </div>
+    <div id="module-modal-alert" class="alert hidden"></div>
+    <form id="module-modal-form" onsubmit="event.preventDefault(); submitModule();">
+      <input type="hidden" id="mod-id">
+      <div class="form-group mb-12">
+        <label class="form-label">Module Title *</label>
+        <input type="text" id="mod-title" class="form-input" placeholder="e.g. Recognizing Social Engineering in Direct Messages" required minlength="3" maxlength="200">
+      </div>
+      <div class="grid grid-3 gap-12 mb-12">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select id="mod-category" class="form-select" required>
+            <option value="PHISHING">Phishing Attacks</option>
+            <option value="PASSWORD_SAFETY">Password Safety</option>
+            <option value="PRIVACY_SETTINGS">Privacy Settings</option>
+            <option value="IDENTITY_THEFT">Identity Theft</option>
+            <option value="CYBERBULLYING">Cyberbullying</option>
+            <option value="OVERSHARING">Oversharing Risks</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Est. Minutes *</label>
+          <input type="number" id="mod-minutes" class="form-input" value="6" min="1" max="120" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Display Order *</label>
+          <input type="number" id="mod-order" class="form-input" value="1" min="1" max="999" required>
+        </div>
+      </div>
+      <div class="form-group mb-12">
+        <label class="form-label">Short Description / Subtitle *</label>
+        <textarea id="mod-description" class="form-textarea" rows="2" placeholder="Brief summary of learning objectives..." required minlength="10" maxlength="500"></textarea>
+      </div>
+      <div class="form-group mb-16">
+        <label class="form-label">Educational Content (HTML formatted) *</label>
+        <textarea id="mod-content" class="form-textarea" rows="8" placeholder="<h2>What is...</h2><p>Educational text...</p>" required></textarea>
+        <small class="text-dim text-xs">Standard HTML tags supported (&lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;em&gt;).</small>
+      </div>
+      <div class="form-group mb-16">
+        <label class="flex items-center gap-8 cursor-pointer">
+          <input type="checkbox" id="mod-active" checked>
+          <span class="text-sm text-white">Active in learning center catalog</span>
+        </label>
+      </div>
+      <div class="flex gap-12 justify-end">
+        <button type="button" class="btn btn-secondary" onclick="closeModuleModal()">Cancel</button>
+        <button type="submit" id="mod-submit-btn" class="btn btn-primary">Save Module</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Module Confirmation Modal -->
+<div id="delete-module-modal" class="modal-overlay">
+  <div class="modal-card" style="max-width:440px;">
+    <div class="flex items-center gap-12 mb-12">
+      <div style="font-size:1.8rem;line-height:1">⚠️</div>
+      <div>
+        <h3 style="color:var(--red-400)">Confirm Module Deletion</h3>
+        <p class="text-muted text-xs">Curriculum history safeguard</p>
+      </div>
+    </div>
+    <input type="hidden" id="del-mod-id">
+    <p class="text-white text-sm mb-12">
+      Are you sure you want to delete module <strong id="del-mod-title" style="color:var(--teal-400)"></strong>?
+    </p>
+    <div class="alert alert-warning mb-16" style="font-size:0.8rem;">
+      <strong>Progress Policy:</strong> Modules with user completion progress cannot be hard-deleted. They must be deactivated instead to maintain learner completion records and compliance history.
+    </div>
+    <div class="flex gap-12 justify-end">
+      <button class="btn btn-secondary" onclick="closeDeleteModuleModal()">Cancel</button>
+      <button id="del-mod-confirm-btn" class="btn" style="background:var(--red-500);color:#fff;border-color:var(--red-500);" onclick="confirmDeleteModule()">Delete Module</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/app.js"></script>
 <script>
 let allUsersData = [];
@@ -440,6 +752,9 @@ let currentUserObj = null;
       animateCounter(document.getElementById('st-assessments'), s.totalAssessments);
       animateCounter(document.getElementById('st-open'), s.openIncidents);
       animateCounter(document.getElementById('st-modules'), s.totalLearningModules);
+      if (s.averageQuizScore !== undefined) {
+        animateCounter(document.getElementById('st-avg-score'), s.averageQuizScore, 800, '%');
+      }
     } catch {}
   }
   refreshStats();
@@ -920,125 +1235,531 @@ let currentUserObj = null;
     }
   };
 
-  // ── Incidents Module Logic ──
+  // ── Incidents Module Logic & Export ──
+  let allIncidentsData = [];
+
   async function loadIncidents() {
     try {
-      const reports = await API.get('/api/admin/incidents');
+      allIncidentsData = await API.get('/api/admin/incidents');
       document.getElementById('incidents-loading').classList.add('hidden');
-      if (reports.length === 0) {
-        document.getElementById('incidents-content').innerHTML = '<div class="empty-state"><div class="empty-icon">🚨</div><h3>No incident reports yet</h3></div>';
-      } else {
-        const rows = reports.map(r => `
-          <tr>
-            <td>${r.id}</td>
-            <td>${escapeHtml(r.reportedBy)}</td>
-            <td>${r.incidentType.replace(/_/g,' ')}</td>
-            <td><span title="${escapeHtml(r.description)}">${escapeHtml(r.title)}</span></td>
-            <td>${escapeHtml(r.platform || '—')}</td>
-            <td>${statusBadge(r.status)}</td>
-            <td>${formatDate(r.reportedAt)}</td>
-            <td>
-              <button class="btn btn-sm btn-secondary" onclick="openStatusModal(${r.id}, '${r.status}')">Update</button>
-            </td>
-          </tr>`).join('');
-        document.getElementById('incidents-content').innerHTML = `
-          <div class="card"><div class="table-wrap"><table class="data-table">
-            <thead><tr><th>#</th><th>User</th><th>Type</th><th>Title</th><th>Platform</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table></div></div>`;
-      }
+      renderIncidentsTable(allIncidentsData);
       document.getElementById('incidents-content').classList.remove('hidden');
     } catch (e) {
-      document.getElementById('incidents-loading').textContent = 'Failed to load incidents.';
+      document.getElementById('incidents-loading').textContent = 'Failed to load incidents: ' + e.message;
       showToast('Error', 'Failed to load incidents.', 'error');
     }
   }
 
-  // ── Quiz Questions Module Logic ──
+  window.filterIncidents = function() {
+    const status = document.getElementById('incident-status-filter').value;
+    const type = document.getElementById('incident-type-filter').value;
+    const filtered = allIncidentsData.filter(r => {
+      if (status !== 'ALL' && r.status !== status) return false;
+      if (type !== 'ALL' && r.incidentType !== type) return false;
+      return true;
+    });
+    renderIncidentsTable(filtered);
+  };
+
+  function renderIncidentsTable(list) {
+    if (list.length === 0) {
+      document.getElementById('incidents-content').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🚨</div>
+          <h3>No incident reports found</h3>
+          <p class="text-muted text-sm">No incidents match current filter parameters.</p>
+        </div>`;
+      return;
+    }
+    const rows = list.map(r => `
+      <tr>
+        <td>#${r.id}</td>
+        <td><strong class="text-white">${escapeHtml(r.reportedBy)}</strong></td>
+        <td><span class="badge" style="background:rgba(20,184,166,0.12);color:var(--teal-400);">${r.incidentType.replace(/_/g,' ')}</span></td>
+        <td>
+          <div style="font-weight:500;color:var(--white);">${escapeHtml(r.title)}</div>
+          <small class="text-dim text-xs" style="display:block;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(r.description)}">${escapeHtml(r.description)}</small>
+        </td>
+        <td>${escapeHtml(r.platform || '—')}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td>${formatDate(r.reportedAt)}</td>
+        <td>
+          <button class="btn btn-sm btn-secondary" onclick="openStatusModal(${r.id}, '${r.status}')">✏️ Review</button>
+        </td>
+      </tr>`).join('');
+
+    document.getElementById('incidents-content').innerHTML = `
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:50px">#</th>
+              <th>Reporter</th>
+              <th>Category</th>
+              <th>Incident Details</th>
+              <th>Platform</th>
+              <th>Status</th>
+              <th>Reported</th>
+              <th style="width:110px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  window.exportIncidentsCsv = function() {
+    const status = document.getElementById('incident-status-filter').value;
+    const type = document.getElementById('incident-type-filter').value;
+    window.location.href = `/api/admin/incidents/export/csv?status=${encodeURIComponent(status)}&category=${encodeURIComponent(type)}`;
+  };
+
+  window.exportIncidentsPdf = function() {
+    const status = document.getElementById('incident-status-filter').value;
+    const type = document.getElementById('incident-type-filter').value;
+    window.location.href = `/api/admin/incidents/export/pdf?status=${encodeURIComponent(status)}&category=${encodeURIComponent(type)}`;
+  };
+
+  // ── Quiz Questions Full CRUD (Task 4) ──
+  let allQuestionsData = [];
+
   async function loadQuestions() {
     try {
-      const questions = await API.get('/api/admin/questions');
+      allQuestionsData = await API.get('/api/admin/questions');
       document.getElementById('questions-loading').classList.add('hidden');
-      const rows = questions.map(q => `
-        <tr>
-          <td>${q.id}</td>
-          <td>${q.category.replace(/_/g,' ')}</td>
-          <td>${escapeHtml(q.questionText.substring(0, 80))}…</td>
-          <td>${q.points}</td>
-          <td>${q.optionCount}</td>
-          <td>
-            <span class="${q.active ? 'toggle-active' : 'toggle-inactive'}">${q.active ? '✓ Active' : '✗ Inactive'}</span>
-          </td>
-          <td>
-            <button class="btn btn-sm btn-secondary" onclick="toggleQuestion(${q.id}, this)">
-              ${q.active ? 'Deactivate' : 'Activate'}
-            </button>
-          </td>
-        </tr>`).join('');
-      document.getElementById('questions-content').innerHTML = `
-        <div class="card"><div class="table-wrap"><table class="data-table">
-          <thead><tr><th>#</th><th>Category</th><th>Question</th><th>Points</th><th>Options</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table></div></div>`;
+      renderQuestionsTable(allQuestionsData);
       document.getElementById('questions-content').classList.remove('hidden');
     } catch (e) {
-      document.getElementById('questions-loading').textContent = 'Failed to load questions.';
+      document.getElementById('questions-loading').textContent = 'Failed to load questions: ' + e.message;
       showToast('Error', 'Failed to load questions.', 'error');
     }
+  }
+
+  window.filterQuestions = function() {
+    const q = (document.getElementById('question-search-input').value || '').trim().toLowerCase();
+    const cat = document.getElementById('question-category-filter').value;
+    const status = document.getElementById('question-status-filter').value;
+
+    const filtered = allQuestionsData.filter(item => {
+      if (cat !== 'ALL' && item.category !== cat) return false;
+      if (status === 'ACTIVE' && !item.active) return false;
+      if (status === 'INACTIVE' && item.active) return false;
+      if (q) {
+        const text = (item.questionText || '').toLowerCase();
+        const expl = (item.explanation || '').toLowerCase();
+        if (!text.includes(q) && !expl.includes(q)) return false;
+      }
+      return true;
+    });
+    renderQuestionsTable(filtered);
+  };
+
+  function renderQuestionsTable(list) {
+    if (list.length === 0) {
+      document.getElementById('questions-content').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>No quiz questions found</h3>
+          <p class="text-muted text-sm">No assessment questions match the current filter criteria.</p>
+        </div>`;
+      return;
+    }
+    const rows = list.map(q => `
+      <tr>
+        <td>#${q.id}</td>
+        <td><span class="badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">${q.category.replace(/_/g,' ')}</span></td>
+        <td>
+          <div style="font-weight:500;color:var(--white);">${escapeHtml(q.questionText)}</div>
+          <small class="text-dim text-xs" style="display:block;margin-top:2px;" title="${escapeHtml(q.explanation || '')}">💡 ${escapeHtml(q.explanation || '')}</small>
+        </td>
+        <td><strong class="text-white">${q.points} pts</strong></td>
+        <td>${q.optionCount} options</td>
+        <td>
+          <span class="${q.active ? 'toggle-active' : 'toggle-inactive'}">
+            ${q.active ? '● Active' : '○ Inactive'}
+          </span>
+        </td>
+        <td>
+          <div class="flex items-center gap-6">
+            <button class="btn btn-sm btn-secondary" onclick="openEditQuestionModal(${q.id})" title="Edit Question">✏️</button>
+            <button class="btn btn-sm btn-secondary" onclick="toggleQuestion(${q.id}, this)">${q.active ? 'Deactivate' : 'Activate'}</button>
+            <button class="btn btn-sm btn-danger" style="background:rgba(239,68,68,0.12);color:var(--red-400);border-color:rgba(239,68,68,0.3)" onclick="openDeleteQuestionModal(${q.id}, '${escapeHtml(q.questionText.substring(0, 45))}')" title="Delete Question">🗑️</button>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    document.getElementById('questions-content').innerHTML = `
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:50px">#</th>
+              <th style="width:160px">Category</th>
+              <th>Question Prompt & Rationale</th>
+              <th style="width:80px">Points</th>
+              <th style="width:90px">Options</th>
+              <th style="width:90px">Status</th>
+              <th style="width:180px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
   }
 
   window.toggleQuestion = async (id, btn) => {
     setLoading(btn, true);
     try {
-      await API.patch(`/api/admin/questions/${id}/toggle`);
-      showToast('Updated', 'Quiz question status toggled.', 'success');
+      const res = await API.patch(`/api/admin/questions/${id}/toggle`);
+      showToast('Status Toggled', `Question #${id} is now ${res.active ? 'Active' : 'Inactive'}.`, 'success');
       loadQuestions();
-    } catch { showToast('Error', 'Failed to toggle question.', 'error'); }
-    finally { setLoading(btn, false); }
+    } catch (e) {
+      showToast('Error', e.message || 'Failed to toggle question.', 'error');
+    } finally {
+      setLoading(btn, false);
+    }
   };
 
-  // ── Learning Modules Logic ──
+  function renderOptionInputs(options = []) {
+    const container = document.getElementById('options-container');
+    const defaultOpts = options.length >= 2 ? options : [
+      { optionText: '', correct: true },
+      { optionText: '', correct: false },
+      { optionText: '', correct: false },
+      { optionText: '', correct: false }
+    ];
+
+    container.innerHTML = defaultOpts.map((opt, i) => `
+      <div class="flex items-center gap-8" style="background:var(--navy-900);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">
+        <input type="radio" name="correct-opt-radio" value="${i}" ${opt.correct ? 'checked' : ''} style="cursor:pointer;" title="Mark as correct answer">
+        <span class="text-xs text-dim" style="width:20px;font-weight:600;">${String.fromCharCode(65 + i)}.</span>
+        <input type="text" class="form-input opt-text-input" placeholder="Option text..." value="${escapeHtml(opt.optionText || '')}" required style="min-height:36px;flex:1;">
+      </div>
+    `).join('');
+  }
+
+  window.openAddQuestionModal = function() {
+    document.getElementById('question-modal-title').textContent = '➕ Add Quiz Question';
+    document.getElementById('q-id').value = '';
+    document.getElementById('q-text').value = '';
+    document.getElementById('q-category').value = 'PHISHING';
+    document.getElementById('q-points').value = '10';
+    document.getElementById('q-explanation').value = '';
+    document.getElementById('q-active').checked = true;
+    document.getElementById('question-modal-alert').classList.add('hidden');
+    renderOptionInputs();
+    document.getElementById('question-modal').classList.add('active');
+  };
+
+  window.openEditQuestionModal = async function(id) {
+    try {
+      const q = await API.get(`/api/admin/questions/${id}`);
+      document.getElementById('question-modal-title').textContent = `✏️ Edit Quiz Question #${id}`;
+      document.getElementById('q-id').value = q.id;
+      document.getElementById('q-text').value = q.questionText || '';
+      document.getElementById('q-category').value = q.category || 'PHISHING';
+      document.getElementById('q-points').value = q.points || 10;
+      document.getElementById('q-explanation').value = q.explanation || '';
+      document.getElementById('q-active').checked = !!q.active;
+      document.getElementById('question-modal-alert').classList.add('hidden');
+      renderOptionInputs(q.options || []);
+      document.getElementById('question-modal').classList.add('active');
+    } catch (e) {
+      showToast('Error', 'Failed to fetch question details: ' + e.message, 'error');
+    }
+  };
+
+  window.closeQuestionModal = function() {
+    document.getElementById('question-modal').classList.remove('active');
+  };
+
+  window.submitQuestion = async function() {
+    const id = document.getElementById('q-id').value;
+    const questionText = document.getElementById('q-text').value.trim();
+    const category = document.getElementById('q-category').value;
+    const points = parseInt(document.getElementById('q-points').value) || 10;
+    const explanation = document.getElementById('q-explanation').value.trim();
+    const active = document.getElementById('q-active').checked;
+    const alertEl = document.getElementById('question-modal-alert');
+    const submitBtn = document.getElementById('q-submit-btn');
+
+    // Collect options
+    const optRows = document.querySelectorAll('#options-container .opt-text-input');
+    const radioChecked = document.querySelector('input[name="correct-opt-radio"]:checked');
+    const correctIdx = radioChecked ? parseInt(radioChecked.value) : -1;
+
+    const options = [];
+    for (let i = 0; i < optRows.length; i++) {
+      const text = optRows[i].value.trim();
+      if (!text) {
+        showAlert(alertEl, `Option ${String.fromCharCode(65 + i)} cannot be blank.`);
+        return;
+      }
+      options.push({
+        optionText: text,
+        correct: (i === correctIdx),
+        displayOrder: i + 1
+      });
+    }
+
+    if (correctIdx < 0) {
+      showAlert(alertEl, 'Please designate one option as the correct answer.');
+      return;
+    }
+
+    const payload = { questionText, category, points, explanation, active, options };
+
+    setLoading(submitBtn, true);
+    try {
+      if (id) {
+        await API.put(`/api/admin/questions/${id}`, payload);
+        showToast('Question Updated', `Question #${id} updated successfully.`, 'success');
+      } else {
+        await API.post('/api/admin/questions', payload);
+        showToast('Question Created', 'New diagnostic question added successfully.', 'success');
+      }
+      closeQuestionModal();
+      loadQuestions();
+    } catch (e) {
+      const msg = e.data?.message || e.message || 'Failed to save question.';
+      showAlert(alertEl, msg);
+      showToast('Error', msg, 'error');
+    } finally {
+      setLoading(submitBtn, false);
+    }
+  };
+
+  window.openDeleteQuestionModal = function(id, textPreview) {
+    document.getElementById('del-q-id').value = id;
+    document.getElementById('del-q-preview').textContent = `#${id} ("${textPreview}...")`;
+    document.getElementById('delete-question-modal').classList.add('active');
+  };
+
+  window.closeDeleteQuestionModal = function() {
+    document.getElementById('delete-question-modal').classList.remove('active');
+  };
+
+  window.confirmDeleteQuestion = async function() {
+    const id = document.getElementById('del-q-id').value;
+    const btn = document.getElementById('del-q-confirm-btn');
+    setLoading(btn, true);
+    try {
+      await API.delete(`/api/admin/questions/${id}`);
+      closeDeleteQuestionModal();
+      showToast('Question Deleted', `Question #${id} removed.`, 'success');
+      loadQuestions();
+    } catch (e) {
+      const msg = e.data?.message || e.message || 'Cannot delete question.';
+      showToast('Deletion Safeguard', msg, 'warning');
+    } finally {
+      setLoading(btn, false);
+    }
+  };
+
+  // ── Learning Modules Full CRUD (Task 5) ──
+  let allModulesData = [];
+
   async function loadAdminModules() {
     try {
-      const modules = await API.get('/api/admin/modules');
+      allModulesData = await API.get('/api/admin/modules');
       document.getElementById('modules-loading').classList.add('hidden');
-      const rows = modules.map(m => `
-        <tr>
-          <td>${m.id}</td>
-          <td><span class="badge" style="background:rgba(20,184,166,0.15);color:#14b8a6;text-transform:capitalize;">${m.category.replace(/_/g,' ')}</span></td>
-          <td><div style="font-weight:500;color:var(--white);">${escapeHtml(m.title)}</div></td>
-          <td>${m.estimatedMinutes} min</td>
-          <td>${m.displayOrder}</td>
-          <td>
-            <span class="${m.active ? 'toggle-active' : 'toggle-inactive'}">${m.active ? '✓ Active' : '✗ Inactive'}</span>
-          </td>
-          <td>
-            <button class="btn btn-sm btn-secondary" onclick="toggleModule(${m.id}, this)">
-              ${m.active ? 'Deactivate' : 'Activate'}
-            </button>
-          </td>
-        </tr>`).join('');
-      document.getElementById('modules-content').innerHTML = `
-        <div class="card"><div class="table-wrap"><table class="data-table">
-          <thead><tr><th>#</th><th>Category</th><th>Module Title</th><th>Est. Time</th><th>Order</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table></div></div>`;
+      renderModulesTable(allModulesData);
       document.getElementById('modules-content').classList.remove('hidden');
     } catch (e) {
-      document.getElementById('modules-loading').textContent = 'Failed to load learning modules.';
+      document.getElementById('modules-loading').textContent = 'Failed to load learning modules: ' + e.message;
       showToast('Error', 'Failed to load learning modules.', 'error');
     }
+  }
+
+  window.filterModules = function() {
+    const q = (document.getElementById('module-search-input').value || '').trim().toLowerCase();
+    const cat = document.getElementById('module-category-filter').value;
+    const status = document.getElementById('module-status-filter').value;
+
+    const filtered = allModulesData.filter(m => {
+      if (cat !== 'ALL' && m.category !== cat) return false;
+      if (status === 'ACTIVE' && !m.active) return false;
+      if (status === 'INACTIVE' && m.active) return false;
+      if (q) {
+        const title = (m.title || '').toLowerCase();
+        const desc = (m.description || '').toLowerCase();
+        if (!title.includes(q) && !desc.includes(q)) return false;
+      }
+      return true;
+    });
+    renderModulesTable(filtered);
+  };
+
+  function renderModulesTable(list) {
+    if (list.length === 0) {
+      document.getElementById('modules-content').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📚</div>
+          <h3>No learning modules found</h3>
+          <p class="text-muted text-sm">No modules match current filter parameters.</p>
+        </div>`;
+      return;
+    }
+    const rows = list.map(m => `
+      <tr>
+        <td>#${m.id}</td>
+        <td><span class="badge" style="background:rgba(20,184,166,0.15);color:#14b8a6;text-transform:capitalize;">${m.category.replace(/_/g,' ')}</span></td>
+        <td>
+          <div style="font-weight:600;color:var(--white);">${escapeHtml(m.title)}</div>
+          <small class="text-dim text-xs" style="display:block;margin-top:2px;">${escapeHtml(m.description || '')}</small>
+        </td>
+        <td>${m.estimatedMinutes} min</td>
+        <td>Order: <strong>${m.displayOrder}</strong></td>
+        <td>
+          <span class="${m.active ? 'toggle-active' : 'toggle-inactive'}">
+            ${m.active ? '● Active' : '○ Inactive'}
+          </span>
+        </td>
+        <td>
+          <div class="flex items-center gap-6">
+            <button class="btn btn-sm btn-secondary" onclick="openEditModuleModal(${m.id})" title="Edit Module">✏️</button>
+            <button class="btn btn-sm btn-secondary" onclick="toggleModule(${m.id}, this)">${m.active ? 'Deactivate' : 'Activate'}</button>
+            <button class="btn btn-sm btn-danger" style="background:rgba(239,68,68,0.12);color:var(--red-400);border-color:rgba(239,68,68,0.3)" onclick="openDeleteModuleModal(${m.id}, '${escapeHtml(m.title)}')" title="Delete Module">🗑️</button>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    document.getElementById('modules-content').innerHTML = `
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:50px">#</th>
+              <th style="width:160px">Category</th>
+              <th>Module Title & Objectives</th>
+              <th style="width:90px">Est. Time</th>
+              <th style="width:90px">Sequence</th>
+              <th style="width:90px">Status</th>
+              <th style="width:180px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
   }
 
   window.toggleModule = async (id, btn) => {
     setLoading(btn, true);
     try {
-      await API.patch(`/api/admin/modules/${id}/toggle`);
-      showToast('Updated', 'Learning module status toggled.', 'success');
+      const res = await API.patch(`/api/admin/modules/${id}/toggle`);
+      showToast('Status Toggled', `Module #${id} is now ${res.active ? 'Active' : 'Inactive'}.`, 'success');
       loadAdminModules();
       refreshStats();
-    } catch { showToast('Error', 'Failed to toggle module.', 'error'); }
-    finally { setLoading(btn, false); }
+    } catch (e) {
+      showToast('Error', e.message || 'Failed to toggle module.', 'error');
+    } finally {
+      setLoading(btn, false);
+    }
+  };
+
+  window.openAddModuleModal = function() {
+    document.getElementById('module-modal-title').textContent = '➕ Add Learning Module';
+    document.getElementById('mod-id').value = '';
+    document.getElementById('mod-title').value = '';
+    document.getElementById('mod-category').value = 'PHISHING';
+    document.getElementById('mod-minutes').value = '6';
+    document.getElementById('mod-order').value = String(allModulesData.length + 1);
+    document.getElementById('mod-description').value = '';
+    document.getElementById('mod-content').value = '';
+    document.getElementById('mod-active').checked = true;
+    document.getElementById('module-modal-alert').classList.add('hidden');
+    document.getElementById('module-modal').classList.add('active');
+  };
+
+  window.openEditModuleModal = async function(id) {
+    try {
+      const m = await API.get(`/api/admin/modules/${id}`);
+      document.getElementById('module-modal-title').textContent = `✏️ Edit Learning Module #${id}`;
+      document.getElementById('mod-id').value = m.id;
+      document.getElementById('mod-title').value = m.title || '';
+      document.getElementById('mod-category').value = m.category || 'PHISHING';
+      document.getElementById('mod-minutes').value = m.estimatedMinutes || 6;
+      document.getElementById('mod-order').value = m.displayOrder || 1;
+      document.getElementById('mod-description').value = m.description || '';
+      document.getElementById('mod-content').value = m.content || '';
+      document.getElementById('mod-active').checked = !!m.active;
+      document.getElementById('module-modal-alert').classList.add('hidden');
+      document.getElementById('module-modal').classList.add('active');
+    } catch (e) {
+      showToast('Error', 'Failed to fetch module: ' + e.message, 'error');
+    }
+  };
+
+  window.closeModuleModal = function() {
+    document.getElementById('module-modal').classList.remove('active');
+  };
+
+  window.submitModule = async function() {
+    const id = document.getElementById('mod-id').value;
+    const title = document.getElementById('mod-title').value.trim();
+    const category = document.getElementById('mod-category').value;
+    const estimatedMinutes = parseInt(document.getElementById('mod-minutes').value) || 5;
+    const displayOrder = parseInt(document.getElementById('mod-order').value) || 1;
+    const description = document.getElementById('mod-description').value.trim();
+    const content = document.getElementById('mod-content').value.trim();
+    const active = document.getElementById('mod-active').checked;
+    const alertEl = document.getElementById('module-modal-alert');
+    const btn = document.getElementById('mod-submit-btn');
+
+    if (!title || !description || !content) {
+      showAlert(alertEl, 'Please fill in all mandatory fields.');
+      return;
+    }
+
+    const payload = { title, category, estimatedMinutes, displayOrder, description, content, active };
+
+    setLoading(btn, true);
+    try {
+      if (id) {
+        await API.put(`/api/admin/modules/${id}`, payload);
+        showToast('Module Updated', `Module #${id} updated successfully.`, 'success');
+      } else {
+        await API.post('/api/admin/modules', payload);
+        showToast('Module Created', 'New learning module published.', 'success');
+      }
+      closeModuleModal();
+      loadAdminModules();
+      refreshStats();
+    } catch (e) {
+      const msg = e.data?.message || e.message || 'Failed to save module.';
+      showAlert(alertEl, msg);
+      showToast('Error', msg, 'error');
+    } finally {
+      setLoading(btn, false);
+    }
+  };
+
+  window.openDeleteModuleModal = function(id, title) {
+    document.getElementById('del-mod-id').value = id;
+    document.getElementById('del-mod-title').textContent = `#${id} ("${title}")`;
+    document.getElementById('delete-module-modal').classList.add('active');
+  };
+
+  window.closeDeleteModuleModal = function() {
+    document.getElementById('delete-module-modal').classList.remove('active');
+  };
+
+  window.confirmDeleteModule = async function() {
+    const id = document.getElementById('del-mod-id').value;
+    const btn = document.getElementById('del-mod-confirm-btn');
+    setLoading(btn, true);
+    try {
+      await API.delete(`/api/admin/modules/${id}`);
+      closeDeleteModuleModal();
+      showToast('Module Deleted', `Module #${id} removed.`, 'success');
+      loadAdminModules();
+      refreshStats();
+    } catch (e) {
+      const msg = e.data?.message || e.message || 'Cannot delete module.';
+      showToast('Progress Safeguard', msg, 'warning');
+    } finally {
+      setLoading(btn, false);
+    }
   };
 
   // Status modal for incident reports
@@ -1070,6 +1791,7 @@ let currentUserObj = null;
     finally { setLoading(btn, false); }
   });
 })();
+
 </script>
 </body>
 </html>

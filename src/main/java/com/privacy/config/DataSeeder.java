@@ -41,6 +41,8 @@ public class DataSeeder implements CommandLineRunner {
     private String adminPassword;
     @Value("${app.admin.email}")
     private String adminEmail;
+    @Value("${app.admin.recover:false}")
+    private boolean adminRecover;
 
     @Override
     public void run(String... args) {
@@ -51,20 +53,49 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedAdmin() {
-        if (userRepository.existsByUsername(adminUsername)) {
-            log.info("Admin user '{}' already exists Ã¢â‚¬â€ skipping seed.", adminUsername);
+        if (adminRecover) {
+            User admin = userRepository.findByUsername(adminUsername).orElse(null);
+            if (admin != null) {
+                admin.setPasswordHash(passwordEncoder.encode(adminPassword));
+                admin.setEmail(adminEmail);
+                admin.setEnabled(true);
+                admin.setRole(User.Role.ADMIN);
+                userRepository.save(admin);
+                log.warn("ADMIN RECOVERY ACTIVATED: Administrator credentials for '{}' reset from environment configuration.", adminUsername);
+            } else {
+                admin = User.builder()
+                        .username(adminUsername)
+                        .email(adminEmail)
+                        .passwordHash(passwordEncoder.encode(adminPassword))
+                        .role(User.Role.ADMIN)
+                        .fullName("System Administrator")
+                        .enabled(true)
+                        .build();
+                userRepository.save(admin);
+                log.warn("ADMIN RECOVERY ACTIVATED: Administrator account '{}' created from environment configuration.", adminUsername);
+            }
             return;
         }
-        User admin = User.builder()
-                .username(adminUsername)
-                .email(adminEmail)
-                .passwordHash(passwordEncoder.encode(adminPassword))
-                .role(User.Role.ADMIN)
-                .fullName("System Administrator")
-                .enabled(true)
-                .build();
-        userRepository.save(admin);
-        log.info("Admin user '{}' created successfully.", adminUsername);
+
+        if (userRepository.existsByUsername(adminUsername)) {
+            log.info("Admin user '{}' already exists - skipping bootstrap seed.", adminUsername);
+            return;
+        }
+
+        if (userRepository.count() == 0) {
+            User admin = User.builder()
+                    .username(adminUsername)
+                    .email(adminEmail)
+                    .passwordHash(passwordEncoder.encode(adminPassword))
+                    .role(User.Role.ADMIN)
+                    .fullName("System Administrator")
+                    .enabled(true)
+                    .build();
+            userRepository.save(admin);
+            log.info("Initial installation: bootstrap admin '{}' created successfully.", adminUsername);
+        } else {
+            log.info("Admin account '{}' does not exist in populated database. Auto-recreation suppressed. To restore or recreate the administrator account, launch with ADMIN_RECOVER=true.", adminUsername);
+        }
     }
 
     private void seedQuizQuestions() {

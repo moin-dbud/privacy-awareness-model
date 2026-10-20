@@ -29,6 +29,7 @@ public class DashboardService {
     private final IncidentReportRepository incidentReportRepository;
     private final LearningModuleRepository moduleRepository;
     private final QuizQuestionRepository questionRepository;
+    private final SimulationResultRepository simulationResultRepository;
 
     @Transactional(readOnly = true)
     public Map<String, Object> getDashboardSummary(String username) {
@@ -59,9 +60,53 @@ public class DashboardService {
         summary.put("completedModules", completedModules);
         summary.put("learningProgress", totalModules > 0 ? (int)((double) completedModules / totalModules * 100) : 0);
 
-        // Incident reports
-        long totalReports = incidentReportRepository.findByUserIdOrderByReportedAtDesc(user.getId()).size();
-        summary.put("totalIncidentReports", totalReports);
+        // Incident reports by status
+        List<com.privacy.entity.IncidentReport> userIncidents = incidentReportRepository.findByUserIdOrderByReportedAtDesc(user.getId());
+        summary.put("totalIncidentReports", (long) userIncidents.size());
+        long openInc = userIncidents.stream().filter(i -> i.getStatus() == com.privacy.entity.IncidentReport.ReportStatus.OPEN).count();
+        long underReviewInc = userIncidents.stream().filter(i -> i.getStatus() == com.privacy.entity.IncidentReport.ReportStatus.UNDER_REVIEW).count();
+        long resolvedInc = userIncidents.stream().filter(i -> i.getStatus() == com.privacy.entity.IncidentReport.ReportStatus.RESOLVED).count();
+        long dismissedInc = userIncidents.stream().filter(i -> i.getStatus() == com.privacy.entity.IncidentReport.ReportStatus.DISMISSED).count();
+        summary.put("openIncidentReports", openInc);
+        summary.put("underReviewIncidentReports", underReviewInc);
+        summary.put("resolvedIncidentReports", resolvedInc);
+        summary.put("dismissedIncidentReports", dismissedInc);
+
+        // Phishing simulations
+        long userSimulations = simulationResultRepository.countByUserId(user.getId());
+        long passedSimulations = simulationResultRepository.countByUserIdAndPassedTrue(user.getId());
+        double simPassRate = userSimulations > 0 ? Math.round(((double) passedSimulations / userSimulations) * 1000.0) / 10.0 : 0.0;
+        summary.put("totalSimulations", userSimulations);
+        summary.put("passedSimulations", passedSimulations);
+        summary.put("simulationPassRate", simPassRate);
+
+        // Recent activity
+        List<Map<String, Object>> recentAssessments = resultRepository.findByUserIdOrderByTakenAtDesc(user.getId()).stream().limit(3).map(r -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", r.getId());
+            m.put("score", r.getTotalScore());
+            m.put("maxScore", r.getMaxPossibleScore());
+            m.put("percentage", r.getPercentageScore());
+            m.put("riskLevel", r.getRiskLevel().name());
+            m.put("takenAt", r.getTakenAt());
+            return m;
+        }).toList();
+        summary.put("recentAssessments", recentAssessments);
+
+        List<Map<String, Object>> recentIncidents = userIncidents.stream().limit(3).map(i -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", i.getId());
+            m.put("title", i.getTitle());
+            m.put("type", i.getIncidentType() != null ? i.getIncidentType().name() : "OTHER");
+            m.put("status", i.getStatus() != null ? i.getStatus().name() : "OPEN");
+            m.put("reportedAt", i.getReportedAt());
+            return m;
+        }).toList();
+        summary.put("recentIncidents", recentIncidents);
+
+        // Personalized recommendations
+        List<Map<String, Object>> recommendations = generateRecommendations(user, totalAssessments, completedModules, totalModules, userIncidents);
+        summary.put("recommendations", recommendations);
 
         return summary;
     }
@@ -150,12 +195,45 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public Map<String, Object> getAdminSummary() {
         Map<String, Object> summary = new HashMap<>();
-        summary.put("totalUsers", userRepository.count());
-        summary.put("totalAssessments", resultRepository.count());
-        summary.put("totalIncidentReports", incidentReportRepository.count());
-        summary.put("openIncidents", incidentReportRepository
-                .findByStatusOrderByReportedAtDesc(com.privacy.entity.IncidentReport.ReportStatus.OPEN).size());
-        summary.put("totalLearningModules", moduleRepository.count());
+        long totalUsers = userRepository.count();
+        long activeUsers = userRepository.countByEnabledTrue();
+        long disabledUsers = userRepository.countByEnabledFalse();
+        long totalAssessments = resultRepository.count();
+
+        List<AssessmentResult> results = resultRepository.findAll();
+        double avgQuizScore = 0.0;
+        if (!results.isEmpty()) {
+            double sum = results.stream().mapToDouble(AssessmentResult::getPercentageScore).sum();
+            avgQuizScore = Math.round((sum / results.size()) * 10.0) / 10.0;
+        }
+
+        long totalIncidents = incidentReportRepository.count();
+        long openInc = incidentReportRepository.findByStatusOrderByReportedAtDesc(com.privacy.entity.IncidentReport.ReportStatus.OPEN).size();
+        long underReviewInc = incidentReportRepository.findByStatusOrderByReportedAtDesc(com.privacy.entity.IncidentReport.ReportStatus.UNDER_REVIEW).size();
+        long resolvedInc = incidentReportRepository.findByStatusOrderByReportedAtDesc(com.privacy.entity.IncidentReport.ReportStatus.RESOLVED).size();
+        long dismissedInc = incidentReportRepository.findByStatusOrderByReportedAtDesc(com.privacy.entity.IncidentReport.ReportStatus.DISMISSED).size();
+
+        long totalModules = moduleRepository.count();
+        long activeModules = moduleRepository.findByActiveTrueOrderByDisplayOrderAsc().size();
+        long totalSimulations = simulationResultRepository.count();
+        long passedSimulations = simulationResultRepository.countByPassedTrue();
+        double simPassRate = totalSimulations > 0 ? Math.round(((double) passedSimulations / totalSimulations) * 1000.0) / 10.0 : 0.0;
+
+        summary.put("totalUsers", totalUsers);
+        summary.put("activeUsers", activeUsers);
+        summary.put("disabledUsers", disabledUsers);
+        summary.put("totalAssessments", totalAssessments);
+        summary.put("averageQuizScore", avgQuizScore);
+        summary.put("totalIncidentReports", totalIncidents);
+        summary.put("openIncidents", openInc);
+        summary.put("underReviewIncidents", underReviewInc);
+        summary.put("resolvedIncidents", resolvedInc);
+        summary.put("dismissedIncidents", dismissedInc);
+        summary.put("totalLearningModules", totalModules);
+        summary.put("activeLearningModules", activeModules);
+        summary.put("totalSimulations", totalSimulations);
+        summary.put("passedSimulations", passedSimulations);
+        summary.put("simulationPassRate", simPassRate);
         return summary;
     }
 
@@ -288,14 +366,123 @@ public class DashboardService {
                         .build())
                 .toList();
 
+        // Phishing simulation metrics
+        long totalSimulations = simulationResultRepository.count();
+        long passedSimulations = simulationResultRepository.countByPassedTrue();
+        double simPassRate = totalSimulations > 0 ? Math.round(((double) passedSimulations / totalSimulations) * 1000.0) / 10.0 : 0.0;
+        List<com.privacy.entity.SimulationResult> simResults = simulationResultRepository.findAll();
+        double simAvgScore = simResults.isEmpty() ? 0.0 : Math.round((simResults.stream().mapToInt(com.privacy.entity.SimulationResult::getScore).average().orElse(0.0)) * 10.0) / 10.0;
+
+        // Module completion metrics
+        Map<String, Long> moduleCompletions = new LinkedHashMap<>();
+        for (com.privacy.entity.LearningModule m : moduleRepository.findByActiveTrueOrderByDisplayOrderAsc()) {
+            moduleCompletions.put(m.getTitle(), progressRepository.countByModuleIdAndCompletedTrue(m.getId()));
+        }
+
+        // Category accuracy breakdown across all users
+        Map<String, Double> categoryAccuracy = new LinkedHashMap<>();
+        for (QuizQuestion.Category cat : QuizQuestion.Category.values()) {
+            long totalCatAnswers = 0;
+            long correctCatAnswers = 0;
+            for (AssessmentResult res : allResults) {
+                if (res.getAnswers() != null) {
+                    for (AssessmentAnswer ans : res.getAnswers()) {
+                        if (ans.getQuestion() != null && ans.getQuestion().getCategory() == cat) {
+                            totalCatAnswers++;
+                            if (ans.isCorrect()) correctCatAnswers++;
+                        }
+                    }
+                }
+            }
+            double catPct = totalCatAnswers > 0 ? Math.round(((double) correctCatAnswers / totalCatAnswers) * 1000.0) / 10.0 : 0.0;
+            categoryAccuracy.put(formatCategoryName(cat), catPct);
+        }
+
         return AdminAnalyticsResponse.builder()
                 .averageScore(avgScore)
                 .totalAssessments(totalAssessments)
+                .totalUsers(userRepository.count())
+                .activeUsers(userRepository.countByEnabledTrue())
+                .disabledUsers(userRepository.countByEnabledFalse())
+                .totalSimulations(totalSimulations)
+                .simulationPassRate(simPassRate)
+                .simulationAverageScore(simAvgScore)
+                .moduleCompletions(moduleCompletions)
+                .categoryAccuracy(categoryAccuracy)
                 .mostMissedQuestions(missedQuestions)
                 .incidentsByCategory(incidentsByCategory)
                 .incidentsByStatus(incidentsByStatus)
                 .newUsersPerWeek(newUsersPerWeek)
                 .build();
+    }
+
+    private List<Map<String, Object>> generateRecommendations(User user, long totalAssessments, long completedModules, long totalModules, List<com.privacy.entity.IncidentReport> incidents) {
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        if (totalAssessments == 0) {
+            list.add(Map.of(
+                "category", "ASSESSMENT",
+                "priority", "HIGH",
+                "title", "Take Privacy Awareness Assessment",
+                "description", "Evaluate your risk profile across 6 key privacy dimensions.",
+                "actionUrl", "/quiz.html",
+                "actionText", "Start Quiz"
+            ));
+        } else {
+            List<CategoryBreakdownResponse> breakdown = getCategoryBreakdown(user.getUsername());
+            CategoryBreakdownResponse weakest = breakdown.stream()
+                .filter(b -> b.getTotalQuestions() > 0 && b.getAccuracyPercentage() < 75.0)
+                .min(Comparator.comparingDouble(CategoryBreakdownResponse::getAccuracyPercentage))
+                .orElse(null);
+
+            if (weakest != null) {
+                list.add(Map.of(
+                    "category", weakest.getCategory(),
+                    "priority", "HIGH",
+                    "title", "Improve " + weakest.getCategoryName() + " (" + weakest.getAccuracyPercentage() + "% Accuracy)",
+                    "description", "Review learning materials to understand key vulnerability vectors and defensive measures.",
+                    "actionUrl", "/learning.html",
+                    "actionText", "Explore Modules"
+                ));
+            }
+        }
+
+        if (completedModules < totalModules) {
+            list.add(Map.of(
+                "category", "LEARNING",
+                "priority", "MEDIUM",
+                "title", "Complete Privacy Learning Curricula (" + completedModules + "/" + totalModules + " completed)",
+                "description", "Deepen your knowledge of password safety, identity theft, and privacy settings.",
+                "actionUrl", "/learning.html",
+                "actionText", "Continue Learning"
+            ));
+        }
+
+        long unresolved = incidents.stream().filter(i -> i.getStatus() == com.privacy.entity.IncidentReport.ReportStatus.OPEN || i.getStatus() == com.privacy.entity.IncidentReport.ReportStatus.UNDER_REVIEW).count();
+        if (unresolved > 0) {
+            list.add(Map.of(
+                "category", "INCIDENT",
+                "priority", "HIGH",
+                "title", "Active Security Incident Pending (" + unresolved + " unresolved)",
+                "description", "Review your reported incidents and ensure you have applied security countermeasures.",
+                "actionUrl", "/incidents.html",
+                "actionText", "View Incident"
+            ));
+        }
+
+        long simCount = simulationResultRepository.countByUserId(user.getId());
+        if (simCount == 0) {
+            list.add(Map.of(
+                "category", "SIMULATION",
+                "priority", "MEDIUM",
+                "title", "Practice in the Phishing Simulator",
+                "description", "Test your detection skills against realistic email, SMS, and DM phishing lures.",
+                "actionUrl", "/simulator.html",
+                "actionText", "Launch Simulator"
+            ));
+        }
+
+        return list;
     }
 
     private String formatCategoryName(QuizQuestion.Category cat) {

@@ -38,63 +38,27 @@ A full-stack educational web application built with **Java 21 + Spring Boot 3.x*
 | Language | Java 21 |
 | Framework | Spring Boot 3.2.5 |
 | Build Tool | Apache Maven 3.9+ |
-| Security | Spring Security, BCrypt, Session-based auth, CSRF |
-| Database | MySQL 8.x |
+| Security | Spring Security 6, BCrypt, Session-based auth, CSRF, UserAccountStatusFilter |
+| Document Export | OpenPDF (com.github.librepdf:openpdf 1.3.40), RFC 4180 CSV with formula shielding |
+| Database | MySQL 8.x (HikariCP connection pool) |
 | ORM | Spring Data JPA / Hibernate |
 | Validation | Jakarta Bean Validation |
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Testing | JUnit 5, H2 in-memory |
-| IDE | IntelliJ IDEA (recommended) |
-
----
-
-## 📁 Project Structure
-
-```
-src/
-├── main/
-│   ├── java/com/privacy/
-│   │   ├── PrivacyAwarenessApplication.java   # Entry point
-│   │   ├── config/
-│   │   │   ├── SecurityConfig.java             # Spring Security
-│   │   │   ├── CustomUserDetailsService.java   # User loading
-│   │   │   └── DataSeeder.java                 # DB seed on startup
-│   │   ├── entity/          # JPA Entities
-│   │   ├── repository/      # Spring Data JPA repos
-│   │   ├── service/         # Business logic
-│   │   ├── controller/      # REST controllers
-│   │   ├── dto/             # Request/Response DTOs
-│   │   └── exception/       # Global error handling
-│   └── resources/
-│       ├── application.properties
-│       └── static/          # Frontend (HTML/CSS/JS)
-│           ├── index.html
-│           ├── login.html
-│           ├── register.html
-│           ├── dashboard.html
-│           ├── quiz.html
-│           ├── learning.html
-│           ├── incidents.html
-│           ├── admin.html
-│           ├── css/style.css
-│           └── js/app.js
-└── test/
-    └── java/com/privacy/
-        └── PrivacyAwarenessApplicationTests.java
-```
+| Frontend | HTML5, CSS3 (Dark Theme Glassmorphism), Vanilla JavaScript |
+| Testing | JUnit 5, H2 in-memory, PowerShell automated MySQL regression runner |
+| IDE | IntelliJ IDEA / Eclipse Adoptium JDK 21 |
 
 ---
 
 ## 🔒 Security Highlights
 
-- Passwords hashed with **BCrypt** (cost factor 12)
-- **CSRF protection** via Cookie XSRF-TOKEN
-- Session-based authentication (no JWT)
-- Server-side role authorization — not just frontend gating
-- Users can only access **their own** data
-- Validation on all inputs (server and client)
-- No stack traces exposed to clients
-- Admin endpoints protected with `@PreAuthorize("hasRole('ADMIN')")`
+- Passwords hashed with **BCrypt** (cost factor 12); raw passwords never logged or returned.
+- **CSRF protection** via Cookie `XSRF-TOKEN` and `X-XSRF-TOKEN` header.
+- **Active Session Invalidation Filter (`UserAccountStatusFilter`)**: Immediately terminates active sessions upon user deactivation or deletion.
+- **Runtime Credential Management**: Authenticated self-service password changes (`/api/auth/change-password`) with bootstrap recovery mode (`ADMIN_RECOVER`).
+- **CSV Formula Injection Shielding**: Escapes spreadsheet command triggers (`=`, `+`, `-`, `@`, `\t`, `\r`) in incident exports.
+- **Relational Integrity Safeguards**: Protects historical quiz answers and student module progress against foreign key cascades.
+- Server-side role authorization (`USER` vs `ADMIN`) enforced via `@PreAuthorize` and `SecurityFilterChain`.
+- Zero stack traces or internal exception details exposed to clients.
 
 ---
 
@@ -102,32 +66,41 @@ src/
 
 See [SETUP.md](./SETUP.md) for step-by-step installation instructions.
 
-```bash
-# Set environment variables, then:
+```powershell
+# 1. Load environment variables
+. .\Set-Env.ps1
+
+# 2. Start the Spring Boot application
 mvn spring-boot:run
-# Visit http://localhost:8080
+
+# 3. Access the portal
+http://localhost:8080
 ```
 
 ---
 
-## 📄 Documentation
+## 📄 Documentation & Artifacts
 
-| File | Contents |
+| Document | Contents |
 |---|---|
-| [SETUP.md](./SETUP.md) | Installation and run instructions (Windows) |
-| [DATABASE.md](./DATABASE.md) | MySQL setup and schema details |
-| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API reference |
-| [PROJECT_REPORT.md](./PROJECT_REPORT.md) | Full academic project report |
+| [docs/SYSTEM_ARCHITECTURE.md](./docs/SYSTEM_ARCHITECTURE.md) | Full architectural diagram & data flow specifications |
+| [docs/ER_DIAGRAM.md](./docs/ER_DIAGRAM.md) | Visual entity-relationship diagram covering all 11 JPA entities |
+| [docs/Privacy_Guard_Presentation.pptx](./docs/Privacy_Guard_Presentation.pptx) | Professional 15-slide widescreen presentation deck |
+| [PROJECT_REPORT.md](./PROJECT_REPORT.md) | Full academic and technical project report |
+| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | Complete REST API endpoint reference and payload examples |
+| [TEST_REPORT.md](./TEST_REPORT.md) | Comprehensive test summary (Unit tests + 40-test live regression suite) |
+| [SETUP.md](./SETUP.md) | Step-by-step setup guide for Windows & MySQL 8 |
+| [DATABASE.md](./DATABASE.md) | MySQL schema, credentials recovery, and relational safeguards |
 | [.env.example](./.env.example) | Environment variable template |
 
 ---
 
 ## 👥 Default Credentials
 
-After first run, the seeder creates:
+After initial database installation, the seeder creates the administrator account:
 
 | Role | Username | Password |
 |---|---|---|
-| ADMIN | Set via `ADMIN_USERNAME` env var | Set via `ADMIN_PASSWORD` env var |
+| ADMIN | Set via `ADMIN_USERNAME` in `.env` | Set via `ADMIN_PASSWORD` in `.env` (bootstrap: `Admin@1234!`) |
 
-> Set these in your `.env` file. **Never commit real credentials.**
+> Set these in your `.env` file. **Never commit real credentials.** Use the in-app **Change Password** option or `ADMIN_RECOVER=true` for credential synchronization.

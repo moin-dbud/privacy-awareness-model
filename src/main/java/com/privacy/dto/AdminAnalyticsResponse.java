@@ -15,6 +15,14 @@ import java.util.Map;
 public class AdminAnalyticsResponse {
     private double averageScore;
     private long totalAssessments;
+    private long totalUsers;
+    private long activeUsers;
+    private long disabledUsers;
+    private long totalSimulations;
+    private double simulationPassRate;
+    private double simulationAverageScore;
+    private Map<String, Long> moduleCompletions;
+    private Map<String, Double> categoryAccuracy;
     private List<MissedQuestionDto> mostMissedQuestions;
     private Map<String, Long> incidentsByCategory;
     private Map<String, Long> incidentsByStatus;

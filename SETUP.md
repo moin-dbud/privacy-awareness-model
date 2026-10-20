@@ -1,4 +1,4 @@
-﻿# Setup Guide (Windows) — Social Media Privacy Awareness & Security Management System
+# Setup Guide (Windows) — Social Media Privacy Awareness & Security Management System
 
 This document provides step-by-step instructions to set up, build, configure, and run the project on Windows 10/11.
 
@@ -101,13 +101,30 @@ The application is running and the database schema and seed data have been initi
 - **Web Application URL**: [http://localhost:8080](http://localhost:8080)
 - **Initial Administrator Login**:
   - Username: `admin`
-  - Password: `Admin@1234!` (or whatever was configured in `.env`)
+  - Password: As set in `.env` (bootstrap default: `Admin@1234!`)
+- **Changing Passwords**:
+  - Both users and administrators can securely update their passwords anytime directly via the **Change Password** button in the top navigation bar or via `POST /api/auth/change-password`.
+- **Disaster Recovery (Admin Credential Reset)**:
+  - If the database admin password hash diverges from `.env`, set `ADMIN_RECOVER=true` in `.env`, run `. .\Set-Env.ps1`, and restart the application. The system will sync the MySQL admin account to `ADMIN_PASSWORD` from `.env`.
 - **Regular User**:
   - Click **Register** on the login page to create a personal user profile.
 
 ---
 
-## 7. Verifying in MySQL Workbench
+## 7. Automated Regression Testing
+
+To run the automated 40-test end-to-end regression test suite against your live MySQL database:
+
+```powershell
+. .\Set-Env.ps1
+.\test-runner.ps1
+```
+
+This verifies authentication, session invalidation filters, quiz evaluations, learning modules, incident workflows, CSV/PDF exports, and relational integrity safeguards directly in MySQL.
+
+---
+
+## 8. Verifying in MySQL Workbench
 
 After starting the application, run this query in MySQL Workbench to confirm table creation and data seeding:
 
@@ -120,11 +137,24 @@ SELECT COUNT(*) AS total_modules FROM learning_modules;
 
 ---
 
-## 8. Common Troubleshooting
+## 9. Comprehensive Documentation & Presentation
+
+- **System Architecture**: [docs/SYSTEM_ARCHITECTURE.md](./docs/SYSTEM_ARCHITECTURE.md)
+- **Database ER Diagram**: [docs/ER_DIAGRAM.md](./docs/ER_DIAGRAM.md)
+- **15-Slide Presentation Deck**: [docs/Privacy_Guard_Presentation.pptx](./docs/Privacy_Guard_Presentation.pptx)
+- **API Documentation**: [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+- **Project Report**: [PROJECT_REPORT.md](./PROJECT_REPORT.md)
+- **Test Report**: [TEST_REPORT.md](./TEST_REPORT.md)
+
+---
+
+## 10. Common Troubleshooting
 
 | Issue | Solution |
 |---|---|
 | `Access denied for user 'privacy_user'@'localhost'` | Check that `DB_PASSWORD` in `.env` matches the password used in `CREATE USER`. |
 | `Communications link failure` | Confirm MySQL service is running: `Get-Service MySQL80`. Start it with `Start-Service MySQL80`. |
+| Admin password mismatch | Change password via user profile modal, or set `ADMIN_RECOVER=true` in `.env` and restart. |
+| Cannot delete question/module | Relational safeguard prevented deletion because records exist in past assessments or user progress. Deactivate the item instead. |
 | `mvn` command not recognized | Use `& "C:\tools\apache-maven-3.10.0\bin\mvn.cmd"` or add `C:\tools\apache-maven-3.10.0\bin` to your `Path`. |
 | Port 8080 conflict | Change `SERVER_PORT=8081` in `.env`, run `. .\Set-Env.ps1`, then restart. |

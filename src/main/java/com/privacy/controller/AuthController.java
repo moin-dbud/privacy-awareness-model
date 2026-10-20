@@ -60,4 +60,15 @@ public class AuthController {
     public ResponseEntity<UserResponse> me(Authentication authentication) {
         return ResponseEntity.ok(userService.getByUsername(authentication.getName()));
     }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody com.privacy.dto.ChangePasswordRequest request,
+                                                               Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Authentication required"));
+        }
+        userService.changePassword(authentication.getName(), request);
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+    }
 }
