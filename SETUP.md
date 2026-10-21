@@ -49,13 +49,21 @@ CREATE DATABASE IF NOT EXISTS privacy_awareness_db
     COLLATE utf8mb4_unicode_ci;
 
 -- 2. Create the application user (replace 'YourSecurePasswordHere' with your local password)
-CREATE USER IF NOT EXISTS 'privacy_user'@'localhost' IDENTIFIED BY 'YourSecurePasswordHere';
+CREATE USER IF NOT EXISTS 'privacy_user'@'localhost' 
+   IDENTIFIED BY 'YourSecurePasswordHere';
+
+ALTER USER 'privacy_user'@'localhost'
+    IDENTIFIED BY 'YourSecurePasswordHere';
 
 -- 3. Grant privileges on the application database
-GRANT ALL PRIVILEGES ON privacy_awareness_db.* TO 'privacy_user'@'localhost';
+GRANT ALL PRIVILEGES ON privacy_awareness_db.* 
+   TO 'privacy_user'@'localhost';
 
 -- 4. Apply privilege changes
 FLUSH PRIVILEGES;
+
+SHOW DATABASES;
+SHOW GRANTS FOR 'privacy_user'@'localhost';
 ```
 
 ---
